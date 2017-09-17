@@ -33,6 +33,9 @@ contract Bounty0xContribution is Pausable, TokenController {
     uint public constant ADVISERS_VESTING_CLIFF = 12 weeks;             // 3 months cliff for ADVISERS
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
 
+    uint public constant BOUNTYIO_VESTING_CLIFF = 1 days;
+    uint public constant BOUNTYIO_VESTING_PERIOD = 1 days;
+
     bool public tokenTransfersEnabled = false;                          // BNTY token transfers will be enabled manually
                                                                         // after first contribution period
                                                                         // Can't be disabled back
@@ -221,6 +224,7 @@ contract Bounty0xContribution is Pausable, TokenController {
         bounty0xToken.revokeAllTokenGrants(founder1);
         bounty0xToken.revokeAllTokenGrants(founder2);
         bounty0xToken.revokeAllTokenGrants(founder3);
+        bounty0xToken.revokeAllTokenGrants(multisigWallet);
 
 
         for (uint j = 0; j < advisers.length; j++) {
@@ -231,11 +235,14 @@ contract Bounty0xContribution is Pausable, TokenController {
         uint64 cliffDate = uint64(startTime.add(TEAM_VESTING_CLIFF));
         uint64 adviserContribVestingDate = uint64(startTime.add(ADVISERS_VESTING_PERIOD));
         uint64 adviserContribCliffDate = uint64(startTime.add(ADVISERS_VESTING_CLIFF));
+        uint64 bountyioContribVestingDate = uint64(startTime.add(BOUNTYIO_VESTING_PERIOD));
+        uint64 bountyioContribCliffDate = uint64(startTime.add(BOUNTYIO_VESTING_CLIFF));
         uint64 startDate = uint64(startTime);
 
         bounty0xToken.grantVestedTokens(founder1, FOUNDER1_STAKE, startDate, cliffDate, vestingDate, true, false);
         bounty0xToken.grantVestedTokens(founder2, FOUNDER2_STAKE, startDate, cliffDate, vestingDate, true, false);
         bounty0xToken.grantVestedTokens(founder3, FOUNDER3_STAKE, startDate, cliffDate, vestingDate, true, false);
+        bounty0xToken.grantVestedTokens(multisigWallet, BOUNTY_FUNDS_STAKE, startDate, bountyioContribCliffDate, bountyioContribVestingDate, true, false);
         bounty0xToken.grantVestedTokens(advisers[1], ADVISERS_STAKE, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
         bounty0xToken.grantVestedTokens(advisers[2], ADVISERS_STAKE, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
     }
