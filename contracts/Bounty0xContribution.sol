@@ -1,6 +1,5 @@
 pragma solidity ^0.4.11;
 
-//import "./HasNoTokens.sol";
 import "./SafeMath.sol";
 import "./Bounty0xToken.sol";
 import "./Ownable.sol";
@@ -10,39 +9,37 @@ import "./minime_interface/TokenController.sol";
 contract Bounty0xContribution is Pausable, TokenController {
     using SafeMath for uint;
 
-    Bounty0xToken public bounty0xToken;
-    address public multisigWallet;                                      // Wallet that receives all sale funds
+    Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
+    address public multisigWallet;                                      // Wallet that receives all sale funds and BountyIO Stakes
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
-    address public earlySponsor;                                        // Wallet of early sponsor
+    address public founder3;                                            // Wallet of founder 3    
     address[] public advisers;                                          // 4 Wallets of advisors
 
-    uint public constant FOUNDER1_STAKE = 119000000 ether;              // 119M DNT
-    uint public constant FOUNDER2_STAKE = 79000000 ether;               // 79M  DNT
-    uint public constant EARLY_CONTRIBUTOR_STAKE = 5000000 ether;       // 5M   DNT
-    uint public constant ADVISER_STAKE = 5000000 ether;                 // 5M   DNT
-    uint public constant ADVISER_STAKE2 = 1000000 ether;                // 1M   DNT
-    uint public constant COMMUNITY_ADVISERS_STAKE = 5000000 ether;      // 5M   DNT
-    uint public constant CONTRIB_PERIOD1_STAKE = 600000000 ether;       // 600M DNT
-    uint public constant CONTRIB_PERIOD2_STAKE = 140000000 ether;       // 140M DNT
-    uint public constant CONTRIB_PERIOD3_STAKE = 40000000 ether;        // 40M  DNT
+    uint public constant FOUNDER1_STAKE = 70000000 ether;               // 80M BNTY
+    uint public constant FOUNDER2_STAKE = 45000000 ether;               // 60M BNTY
+    uint public constant FOUNDER3_STAKE = 45000000 ether;               // 60M BNTY =160M
+    uint public constant ADVISERS_STAKE = 15000000 ether;               // 15M BNTY
+    uint public constant BOUNTY_FUNDS_STAKE = 75000000 ether;           // 75M BNTY
+    uint public constant CONTRIB_PERIOD1_STAKE = 250000000 ether;       // 250M BNTY
 
+    
     uint public minContribAmount = 0.01 ether;                          // 0.01 ether
     uint public maxGasPrice = 50000000000;                              // 50 GWei
 
-    uint public constant TEAM_VESTING_CLIFF = 24 weeks;                 // 6 months vesting cliff for founders and advisors, except community advisors
-    uint public constant TEAM_VESTING_PERIOD = 96 weeks;                // 2 years vesting period for founders and advisors, except community advisors
+    uint public constant TEAM_VESTING_CLIFF = 24 weeks;                 // 6 months vesting cliff for founders and advisors
+    uint public constant TEAM_VESTING_PERIOD = 96 weeks;                // 2 years vesting period for founders and advisors 
 
-    uint public constant EARLY_CONTRIBUTOR_VESTING_CLIFF = 12 weeks;    // 3 months vesting cliff for early sponsor
-    uint public constant EARLY_CONTRIBUTOR_VESTING_PERIOD = 24 weeks;   // 6 months vesting cliff for early sponsor
+    uint public constant ADVISERS_VESTING_CLIFF = 12 weeks;             // 3 months cliff for ADVISERS
+    uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
 
-    bool public tokenTransfersEnabled = false;                          // DNT token transfers will be enabled manually
+    bool public tokenTransfersEnabled = false;                          // BNTY token transfers will be enabled manually
                                                                         // after first contribution period
                                                                         // Can't be disabled back
     struct Contributor {
         uint amount;                        // Amount of ETH contributed by an address in given contribution period
-        bool isCompensated;                 // Whether this contributor received DNT token for ETH contribution
-        uint amountCompensated;             // Amount of DNT received. Not really needed to store,
+        bool isCompensated;                 // Whether this contributor received BNTY token for ETH contribution
+        uint amountCompensated;             // Amount of BNTY received. Not really needed to store,
                                             // but stored for accounting and security purposes
     }
 
@@ -72,14 +69,13 @@ contract Bounty0xContribution is Pausable, TokenController {
         address _multisigWallet,
         address _founder1,
         address _founder2,
-        address _earlySponsor,
+        address _founder3,
         address[] _advisers
     ) {
         require(_advisers.length == 5);
         multisigWallet = _multisigWallet;
         founder1 = _founder1;
         founder2 = _founder2;
-        earlySponsor = _earlySponsor;
         advisers = _advisers;
     }
     
@@ -99,7 +95,7 @@ contract Bounty0xContribution is Pausable, TokenController {
     //  Amounts from the same address should be added up
     //  If soft or hard cap is reached, end time should be modified
     //  Funds should be transferred into multisig wallet
-    // @param contributor Address that will receive DNT token
+    // @param contributor Address that will receive BNTY token
     function contributeWithAddress(address contributor)
         payable
         stopInEmergency
@@ -153,8 +149,8 @@ contract Bounty0xContribution is Pausable, TokenController {
         onContribution(newTotalContributed, contributor, contribValue, contributorsKeys.length);
     }
 
-    // @notice This method is called by owner after contribution period ends, to distribute DNT in proportional manner
-    //  Each contributor should receive DNT just once even if this method is called multiple times
+    // @notice This method is called by owner after contribution period ends, to distribute BNTY in proportional manner
+    //  Each contributor should receive BNTY just once even if this method is called multiple times
     //  In case of many contributors must be able to compensate contributors in paginational way, otherwise might
     //  run out of gas if wanted to compensate all on one method call. Therefore parameters offset and limit
     // @param periodIndex Index of contribution period (0-2)
@@ -224,7 +220,8 @@ contract Bounty0xContribution is Pausable, TokenController {
 
         bounty0xToken.revokeAllTokenGrants(founder1);
         bounty0xToken.revokeAllTokenGrants(founder2);
-        bounty0xToken.revokeAllTokenGrants(earlySponsor);
+        bounty0xToken.revokeAllTokenGrants(founder3);
+
 
         for (uint j = 0; j < advisers.length; j++) {
             bounty0xToken.revokeAllTokenGrants(advisers[j]);
@@ -232,21 +229,15 @@ contract Bounty0xContribution is Pausable, TokenController {
 
         uint64 vestingDate = uint64(startTime.add(TEAM_VESTING_PERIOD));
         uint64 cliffDate = uint64(startTime.add(TEAM_VESTING_CLIFF));
-        uint64 earlyContribVestingDate = uint64(startTime.add(EARLY_CONTRIBUTOR_VESTING_PERIOD));
-        uint64 earlyContribCliffDate = uint64(startTime.add(EARLY_CONTRIBUTOR_VESTING_CLIFF));
+        uint64 adviserContribVestingDate = uint64(startTime.add(ADVISERS_VESTING_PERIOD));
+        uint64 adviserContribCliffDate = uint64(startTime.add(ADVISERS_VESTING_CLIFF));
         uint64 startDate = uint64(startTime);
 
         bounty0xToken.grantVestedTokens(founder1, FOUNDER1_STAKE, startDate, cliffDate, vestingDate, true, false);
         bounty0xToken.grantVestedTokens(founder2, FOUNDER2_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(earlySponsor, EARLY_CONTRIBUTOR_STAKE, startDate, earlyContribCliffDate, earlyContribVestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[0], ADVISER_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[1], ADVISER_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[2], ADVISER_STAKE2, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[3], ADVISER_STAKE2, startDate, cliffDate, vestingDate, true, false);
-
-        // Community advisors stake has no vesting, but we set it up this way, so we can revoke it in case of
-        // re-setting up contribution period
-        bounty0xToken.grantVestedTokens(advisers[4], COMMUNITY_ADVISERS_STAKE, startDate, startDate, startDate, true, false);
+        bounty0xToken.grantVestedTokens(founder3, FOUNDER3_STAKE, startDate, cliffDate, vestingDate, true, false);
+        bounty0xToken.grantVestedTokens(advisers[1], ADVISERS_STAKE, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
+        bounty0xToken.grantVestedTokens(advisers[2], ADVISERS_STAKE, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
     }
 
     // @notice Enables contribution period
@@ -283,7 +274,7 @@ contract Bounty0xContribution is Pausable, TokenController {
     }
 
     // @notice Sets Bounty0xToken contract
-    //  Generates all DNT tokens and assigns them to this contract
+    //  Generates all BNTY tokens and assigns them to this contract
     //  If token contract has already generated tokens, do not generate again
     // @param _Bounty0xToken Bounty0xToken address
     function setBounty0xToken(address _bounty0xToken)
@@ -295,15 +286,13 @@ contract Bounty0xContribution is Pausable, TokenController {
         if (bounty0xToken.totalSupply() == 0) {
             bounty0xToken.generateTokens(this, FOUNDER1_STAKE
                 .add(FOUNDER2_STAKE)
-                .add(EARLY_CONTRIBUTOR_STAKE)
-                .add(ADVISER_STAKE.mul(2))
-                .add(ADVISER_STAKE2.mul(2))
-                .add(COMMUNITY_ADVISERS_STAKE)
+                .add(FOUNDER3_STAKE)
+                .add(ADVISERS_STAKE.mul(2))
                 .add(CONTRIB_PERIOD1_STAKE));
         }
     }
 
-    // @notice Enables transfers of DNT
+    // @notice Enables transfers of BNTY
     //  Will be executed after first contribution period by owner
     function enableBounty0xTokenTransfers()
         onlyOwner
@@ -312,7 +301,7 @@ contract Bounty0xContribution is Pausable, TokenController {
         tokenTransfersEnabled = true;
     }
 
-    // @notice Method to claim tokens accidentally sent to a DNT contract
+    // @notice Method to claim tokens accidentally sent to a BNTY contract
     //  Only multisig wallet can execute
     // @param _token Address of claimed ERC20 Token
     function claimTokensFromTokenBounty0xToken(address _token)
@@ -338,7 +327,7 @@ contract Bounty0xContribution is Pausable, TokenController {
         throw;
     }
 
-    // Before transfers are enabled for everyone, only this contract is allowed to distribute DNT
+    // Before transfers are enabled for everyone, only this contract is allowed to distribute BNTY
     function onTransfer(address _from, address _to, uint _amount) public returns (bool) {
         return tokenTransfersEnabled || _from == address(this) || _to == address(this);
     }
@@ -386,8 +375,7 @@ contract Bounty0xContribution is Pausable, TokenController {
         for (uint i = 0; i < advisers.length; i++) {
             _advisers[i] = advisers[i];
         }
-        return (stopped, multisigWallet, founder1, founder2, earlySponsor, _advisers, tokenTransfersEnabled,
-            maxGasPrice);
+        return (stopped, multisigWallet, founder1, founder2, founder3, _advisers, tokenTransfersEnabled, maxGasPrice);
     }
 
     // Used by contribution front-end to obtain contributor's properties
