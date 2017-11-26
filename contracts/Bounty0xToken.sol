@@ -10,9 +10,9 @@ contract Bounty0xToken is MiniMeToken, VestedToken {
             0x0,                        // no parent token
             0,                          // no snapshot block number from parent
             "bounty0x Token",           // Token name
-            2   ,                       // Decimals
+            18   ,                      // Decimals
             "BNTY",                     // Symbol
-            true                        // Enable transfers
+            false                       // Enable transfers
             )
     {
         changeController(_controller);

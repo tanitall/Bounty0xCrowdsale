@@ -1,5 +1,4 @@
-pragma solidity ^0.4.11;
-
+pragma solidity ^0.4.18;
 /*
     Copyright 2017, Jorge Izquierdo (Aragon Foundation)
     Copyright 2017, Jordi Baylina (Giveth)
@@ -20,7 +19,7 @@ contract Controlled {
 
     /// @notice Changes the controller of the contract
     /// @param _newController The new controller of the contract
-    function changeController(address _newController) onlyController {
+    function changeController(address _newController) public onlyController {
         controller = _newController;
     }
 }

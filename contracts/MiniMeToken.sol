@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
 
 import "./minime_interface/Controlled.sol";
 import "./minime_interface/TokenController.sol";
@@ -350,6 +350,7 @@ contract MiniMeToken is ERC20, Controlled {
     /// @return True if the tokens are generated correctly
     function generateTokens(address _owner, uint _amount) onlyController returns (bool) {
         uint curTotalSupply = getValueAt(totalSupplyHistory, block.number);
+        require(curTotalSupply <= 500000000);
         updateValueAtNow(totalSupplyHistory, curTotalSupply.add(_amount));
         var previousBalanceTo = balanceOf(_owner);
         updateValueAtNow(balances[_owner], previousBalanceTo.add(_amount));

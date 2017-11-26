@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
 
 /*
     This contract adds modifier to VestedToken contract in order to restrict creating
