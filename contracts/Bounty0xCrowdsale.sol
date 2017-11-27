@@ -63,15 +63,13 @@ contract Bounty0xContribution is Pausable, TokenController {
     event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
     event OnHardCapReached(uint endTime);
 
-    function Bounty0xContribution(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers, address[] _preSaleInvestors, address[] _whitelistArray) {
+    function Bounty0xContribution(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) {
         require(_advisers.length == 4);
         founder1 = _founder1;
         founder2 = _founder2;
         founder3 = _founder3;
         bounty0xWallet = _bounty0xWallet;
         advisers = _advisers;
-        preSaleInvestors = _preSaleInvestors;
-        whitelistArray = _whitelistArray;
     }
 
 
@@ -205,5 +203,13 @@ contract Bounty0xContribution is Pausable, TokenController {
         for (uint i = 0; i < whitelistArray.length; i++) {
             whitelistContributors[whitelistArray[i]] = true;
         }
+    }
+
+    function setPreSaleInvestorsArray(address[] _preSaleInvestors) public onlyOwner {
+        preSaleInvestors = _preSaleInvestors;
+    }
+
+    function setWhiteListArray(address[] _whitelistArray) public onlyOwner {
+        whitelistArray = _whitelistArray;
     }
 }
