@@ -7,7 +7,7 @@ import "./Ownable.sol";
 import "./Pausable.sol";
 import "./minime_interface/TokenController.sol";
 
-contract Bounty0xContribution is Pausable, TokenController {
+contract Bounty0xCrowdsale is Pausable, TokenController {
     using SafeMath for uint256;
 
     Bounty0xPresale constant public PRESALE_DEPLOYED = Bounty0xPresale(0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea);
@@ -63,7 +63,7 @@ contract Bounty0xContribution is Pausable, TokenController {
     event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
     event OnHardCapReached(uint endTime);
 
-    function Bounty0xContribution(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) {
+    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) {
         require(_advisers.length == 4);
         founder1 = _founder1;
         founder2 = _founder2;
@@ -136,7 +136,6 @@ contract Bounty0xContribution is Pausable, TokenController {
     function setContribPeriod() onlyOwner {
         require(!saleRunning);
 
-        /*
         bounty0xToken.revokeAllTokenGrants(founder1);
         bounty0xToken.revokeAllTokenGrants(founder2);
         bounty0xToken.revokeAllTokenGrants(founder3);
@@ -145,7 +144,6 @@ contract Bounty0xContribution is Pausable, TokenController {
         for (uint j = 0; j < advisers.length; j++) {
             bounty0xToken.revokeAllTokenGrants(advisers[j]);
         }
-                */
 
         uint64 vestingDate = uint64(SALE_START_DATE.add(TEAM_VESTING_PERIOD));
         uint64 cliffDate = uint64(SALE_START_DATE.add(TEAM_VESTING_CLIFF));

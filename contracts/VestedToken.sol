@@ -133,7 +133,9 @@ contract VestedToken is LimitedTransferToken, GrantsControlled {
   function transferableTokens(address holder, uint64 time) constant public returns (uint256) {
     uint256 grantIndex = tokenGrantsCount(holder);
 
-    if (grantIndex == 0) return balanceOf(holder); // shortcut for holder without grants
+    if (grantIndex == 0) { 
+      return balanceOf(holder); 
+    } // shortcut for holder without grants
 
   // Iterate through all the grants the holder has, and add all non-vested tokens
     uint256 nonVested = 0;
