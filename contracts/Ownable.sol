@@ -1,31 +1,32 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.11;
 
 
 /// @dev `Owned` is a base level contract that assigns an `owner` that can be
 ///  later changed
 contract Ownable {
 
-    address public owner;
-
-    /// @dev `owner` is the only address that can call a function with this
-    /// modifier
+/// @dev `owner` is the only address that can call a function with this
+/// modifier
     modifier onlyOwner() {
         require(msg.sender == owner);
         _;
     }
 
-    /// @notice The Constructor assigns the message sender to be `owner`
+    address public owner;
+
+/// @notice The Constructor assigns the message sender to be `owner`
     function Ownable() {
         owner = msg.sender;
     }
 
     address public newOwner;
 
-    /// @notice `owner` can step down and assign some other address to this role
-    /// @param _newOwner The address of the new owner.
+/// @notice `owner` can step down and assign some other address to this role
+/// @param _newOwner The address of the new owner.
     function changeOwner(address _newOwner) onlyOwner {
         newOwner = _newOwner;
     }
+
 
     function acceptOwnership() {
         if (msg.sender == newOwner) {

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.11;
 
 /*
     This contract adds modifier to VestedToken contract in order to restrict creating
@@ -6,10 +6,7 @@ pragma solidity ^0.4.18;
 */
 
 contract GrantsControlled {
-    modifier onlyGrantsController {
-        assert(msg.sender == grantsController);
-        _;
-    }
+    modifier onlyGrantsController { if (msg.sender != grantsController) throw; _; }
 
     address public grantsController;
 

@@ -1,19 +1,12 @@
 var Bounty0xToken = artifacts.require("./Bounty0xToken.sol");
-var Bounty0xContribution = artifacts.require("./Bounty0xContribution.sol");
+var Bounty0xCrowdsale = artifacts.require("./Bounty0xCrowdsale.sol");
+var founder1 = "0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90";
+var founder2 = "0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5";
+var founder3 = "0xb2427291cb661a2ed72c1e66a9fe2faffbb67b2f";
+var bounty0Wallet = "0xc9afbf88b36a5c4a0a8a41918552e24a5c3a1958";
+var advisors = ["0x35e3fa8f6bdb38af7b657866ef39ebe43d9875c2", "0xd7383e030e7d277a000eb22fa3dede2ccacd9983", "0xf40c533cd70624b361d02884c46840cfb2e4f40c", "0x264dfc4f90a58ed2e5be3fb5378e511c468f198f"];
 
 module.exports = function(deployer) {
-  const founder1 = '0x9d6eb7e4a9dd3e9edbc3be1483b34be9b68716f4';
-  const foudner2 = '0x92d01f119132f39fba9e11dc1048af3ff0d856aa';
-  const founder3 = '0xae439b21043c5f927160a0eebc20dfab845d0596';
-  const bounty0xWallet = '0x9d6eb7e4a9dd3e9edbc3be1483b34be9b68716f4';
-  const advisers = ['0x9d6eb7e4a9dd3e9edbc3be1483b34be9b68716f4', '0xbf8635365f8176094d8297bc33c7bb679a9029c5',
-  '0xae439b21043c5f927160a0eebc20dfab845d0596', '0x92d01f119132f39fba9e11dc1048af3ff0d856aa'];
-
-  const preSaleInvestors = ['0x9d6eb7e4a9dd3e9edbc3be1483b34be9b68716f4', '0xbf8635365f8176094d8297bc33c7bb679a9029c5',
-  '0xae439b21043c5f927160a0eebc20dfab845d0596', '0x92d01f119132f39fba9e11dc1048af3ff0d856aa'];
-
-  const whitelistArray = ['0x9d6eb7e4a9dd3e9edbc3be1483b34be9b68716f4', '0xbf8635365f8176094d8297bc33c7bb679a9029c5',
-  '0xae439b21043c5f927160a0eebc20dfab845d0596', '0x92d01f119132f39fba9e11dc1048af3ff0d856aa'];
   deployer.deploy(Bounty0xToken);
-  deployer.deploy(Bounty0xContribution, founder1, foudner2, founder3, bounty0xWallet, preSaleInvestors, whitelistArray);
+  deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors);
 };
