@@ -2,4 +2,6 @@
 
 Crowdsale contract based on Zeppelin Contracts
 
-Still WIP.
+## Development
+1. `npm install`
+1. `npm test`

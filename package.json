@@ -1,0 +1,34 @@
+{
+  "name": "bounty0xcrowdsale",
+  "version": "0.0.1",
+  "description": "bounty0x crowdsale contracts",
+  "main": "truffle.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bounty0x/Bounty0xCrowdsale.git"
+  },
+  "keywords": [
+    "bounty0x",
+    "crowdsale"
+  ],
+  "author": "bounty0x",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bounty0x/Bounty0xCrowdsale/issues"
+  },
+  "homepage": "https://github.com/bounty0x/Bounty0xCrowdsale#readme",
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "minimetoken": "^0.2.0",
+    "truffle": "^4.0.1",
+    "truffle-hdwallet-provider": "0.0.3"
+  }
+}
