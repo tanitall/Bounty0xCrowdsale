@@ -1,6 +1,7 @@
 pragma solidity ^0.4.11;
 
-import "./MiniMeToken.sol";
+
+import "minimetoken/contracts/MiniMeToken.sol";
 import "./VestedToken.sol";
 
 contract Bounty0xToken is MiniMeToken, VestedToken {

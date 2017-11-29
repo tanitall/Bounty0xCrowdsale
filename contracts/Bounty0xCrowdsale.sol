@@ -5,7 +5,7 @@ import "./Bounty0xToken.sol";
 import "./Bounty0xPresale.sol";
 import "./Ownable.sol";
 import "./Pausable.sol";
-import "./minime_interface/TokenController.sol";
+import "minimetoken/contracts/TokenController.sol";
 
 contract Bounty0xCrowdsale is Pausable, TokenController {
     using SafeMath for uint256;
@@ -14,19 +14,19 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
-    address public founder3;                                            // Wallet of founder 3  
-    address public bounty0xWallet;                                      // Bounty0x Wallet  
+    address public founder3;                                            // Wallet of founder 3
+    address public bounty0xWallet;                                      // Bounty0x Wallet
     address[] public advisers;                                          // 4 Wallets of advisors
     address[] public preSaleInvestors;                                  // Array of all whitelisted investors
     address[] public whitelistArray;
     mapping (address => bool) public whitelistContributors;
 
     // Crowdsale Conditions
-    mapping (address => uint256) public contributors; 
+    mapping (address => uint256) public contributors;
     uint256 public maximumParticipationAmount = 3.16 ether;             // Maximum initial constribution cap per person
     uint256 public constant MINIMUM_PARTICIPATION_AMOUNT = 0.1 ether;   // IN ETH minimum one can contribute
     uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000 * (10 ** uint256(18));           // maximum BNTY tokens to be minted at any given point
-    uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH 
+    uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH
     uint256 public constant PRESALE_FIX_RATE = 27725850154382;      // in WEI
     uint256 public constant MAINSALE_FIX_RATE = 34657312692978;     // in WEI
     uint256 public constant MAX_GAS_PRICE = 20000000000;                // 20 gwei (in wei)
@@ -42,7 +42,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 public constant ADVISORS_POOL = 15000000;                   // 15M BNTY Advisors Pool
     uint256 public totalContributed;                                    // Total amount of ETH contributed in given period
     uint256 public preSaleCompensationCounter;
-    
+
     bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
     bool public hardCapReached = false;                                 // If hard cap was reached
     bool private saleRunning;                                           // Check sale active
@@ -52,7 +52,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
     // Vesting conditions
     uint public constant TEAM_VESTING_CLIFF = 1 weeks;                  // 1 week vesting cliff for founders and advisors
-    uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisors 
+    uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisors
 
     uint public constant ADVISERS_VESTING_CLIFF = 1 weeks;              // 1 week cliff for ADVISERS
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
@@ -80,13 +80,13 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     function contributeWithAddress(address contributor) payable stopInEmergency {
         require(saleRunning);
         require(tx.gasprice <= MAX_GAS_PRICE);
-        
+
         // make sure tokens left is more than zero
         require(mainsaleTokensLeft >= 0);
 
         uint256 contributionAmount = msg.value;
         require(contributionAmount > 0);
-        
+
         if (whitelistIsActive) {
             require(bounty0xToken.balanceOf(contributor).add(contributionAmount) <= maximumParticipationAmount);
             require(whitelistContributors[contributor]);
@@ -97,7 +97,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         // Update tokens left in main sale pool
         mainsaleTokensLeft = mainsaleTokensLeft.sub(tokens);
-        
+
         // update funding state
         totalContributed = totalContributed.add(contributionAmount);
 
@@ -179,7 +179,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         // Update tokens left in main sale pool
         preSaleTokensLeft = preSaleTokensLeft.sub(tokens);
-        
+
         // update funding state
         preSaleCompensationCounter = preSaleCompensationCounter.add(value);
 
