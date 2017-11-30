@@ -1,16 +1,16 @@
 pragma solidity ^0.4.18;
 
-import "./SafeMath.sol";
-import "./Bounty0xToken.sol";
-import "./Bounty0xPresale.sol";
-import "./Ownable.sol";
-import "./Pausable.sol";
-import "minimetoken/contracts/TokenController.sol";
+import 'minimetoken/contracts/TokenController.sol';
+import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+
+import './Bounty0xToken.sol';
+import './interfaces/Bounty0xPresaleI.sol';
 
 contract Bounty0xCrowdsale is Pausable, TokenController {
     using SafeMath for uint256;
 
-    Bounty0xPresale constant public PRESALE_DEPLOYED = Bounty0xPresale(0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea);
+    Bounty0xPresaleI constant public PRESALE_DEPLOYED = Bounty0xPresaleI(0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea);
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
@@ -63,21 +63,23 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
     event OnHardCapReached(uint endTime);
 
-    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) {
+    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
         require(_advisers.length == 4);
         founder1 = _founder1;
         founder2 = _founder2;
         founder3 = _founder3;
         bounty0xWallet = _bounty0xWallet;
         advisers = _advisers;
+
+        createBounty0xToken();
     }
 
 
-    function contribute() payable stopInEmergency {
+    function contribute() payable public whenNotPaused {
         contributeWithAddress(msg.sender);
     }
 
-    function contributeWithAddress(address contributor) payable stopInEmergency {
+    function contributeWithAddress(address contributor) payable public whenNotPaused {
         require(saleRunning);
         require(tx.gasprice <= MAX_GAS_PRICE);
 
@@ -113,51 +115,55 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     //  Generates all BNTY tokens and assigns them to this contract
     //  If token contract has already generated tokens, do not generate again
     //  @param _Bounty0xToken Bounty0xToken address
-    function setBounty0xToken(address _bounty0xToken) public onlyOwner {
-        require(_bounty0xToken != 0x0);
-        require(!saleRunning);
-        bounty0xToken = Bounty0xToken(_bounty0xToken);
-        if (bounty0xToken.totalSupply() == 0) {
-            bounty0xToken.generateTokens(this, MAINSALE_POOL
-                .add(PRESALE_POOL)
-                .add(FOUNDER1_STAKE)
-                .add(FOUNDER2_STAKE)
-                .add(FOUNDER3_STAKE)
-                .add(BOUNTY0X_RESERVE)
-                .add(ADVISORS_POOL));
-        }
-        require(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY);
+    function createBounty0xToken() private {
+        // deploy the bounty0x token
+        bounty0xToken = new Bounty0xToken(this, 0x0);
+
+        // generate all the tokens that will need to be distributed
+        bounty0xToken.generateTokens(
+                this,
+                MAINSALE_POOL
+                    .add(PRESALE_POOL)
+                    .add(FOUNDER1_STAKE)
+                    .add(FOUNDER2_STAKE)
+                    .add(FOUNDER3_STAKE)
+                    .add(BOUNTY0X_RESERVE)
+                    .add(ADVISORS_POOL)
+        );
+
+        // double check the supply is as expected
+        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY);
     }
 
     // @notice Method for setting up contribution period
     //  Only owner should be able to execute
     //  Setting first contribution period sets up vesting for founders & advisors
     //  Contribution period should still not be enabled after calling this method
-    function setContribPeriod() onlyOwner {
+    function setContribPeriod() onlyOwner public {
         require(!saleRunning);
 
-        bounty0xToken.revokeAllTokenGrants(founder1);
-        bounty0xToken.revokeAllTokenGrants(founder2);
-        bounty0xToken.revokeAllTokenGrants(founder3);
-        bounty0xToken.revokeAllTokenGrants(bounty0xWallet);
-
-        for (uint j = 0; j < advisers.length; j++) {
-            bounty0xToken.revokeAllTokenGrants(advisers[j]);
-        }
-
-        uint64 vestingDate = uint64(SALE_START_DATE.add(TEAM_VESTING_PERIOD));
-        uint64 cliffDate = uint64(SALE_START_DATE.add(TEAM_VESTING_CLIFF));
-        uint64 adviserContribVestingDate = uint64(SALE_START_DATE.add(ADVISERS_VESTING_PERIOD));
-        uint64 adviserContribCliffDate = uint64(SALE_START_DATE.add(ADVISERS_VESTING_CLIFF));
-        uint64 startDate = uint64(SALE_START_DATE);
-
-        bounty0xToken.grantVestedTokens(founder1, FOUNDER1_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(founder2, FOUNDER2_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(founder3, FOUNDER3_STAKE, startDate, cliffDate, vestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[1], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
-        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
+//        bounty0xToken.revokeAllTokenGrants(founder1);
+//        bounty0xToken.revokeAllTokenGrants(founder2);
+//        bounty0xToken.revokeAllTokenGrants(founder3);
+//        bounty0xToken.revokeAllTokenGrants(bounty0xWallet);
+//
+//        for (uint j = 0; j < advisers.length; j++) {
+//            bounty0xToken.revokeAllTokenGrants(advisers[j]);
+//        }
+//
+//        uint64 vestingDate = uint64(SALE_START_DATE.add(TEAM_VESTING_PERIOD));
+//        uint64 cliffDate = uint64(SALE_START_DATE.add(TEAM_VESTING_CLIFF));
+//        uint64 adviserContribVestingDate = uint64(SALE_START_DATE.add(ADVISERS_VESTING_PERIOD));
+//        uint64 adviserContribCliffDate = uint64(SALE_START_DATE.add(ADVISERS_VESTING_CLIFF));
+//        uint64 startDate = uint64(SALE_START_DATE);
+//
+//        bounty0xToken.grantVestedTokens(founder1, FOUNDER1_STAKE, startDate, cliffDate, vestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(founder2, FOUNDER2_STAKE, startDate, cliffDate, vestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(founder3, FOUNDER3_STAKE, startDate, cliffDate, vestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(advisers[1], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
+//        bounty0xToken.grantVestedTokens(advisers[2], ADVISORS_POOL, startDate, adviserContribCliffDate, adviserContribVestingDate, true, false);
 
         //TokenTimelock(BOUNTY0X_RESERVE, bounty0xWallet, UNFREEZE_DATE);
     }

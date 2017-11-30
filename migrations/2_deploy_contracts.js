@@ -15,5 +15,5 @@ const advisors = [
 
 module.exports = function (deployer) {
   deployer.deploy(Bounty0xToken);
-  deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors);
+  //deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors);
 };
