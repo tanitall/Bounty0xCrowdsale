@@ -46,8 +46,8 @@ contract Bounty0xPresaleDistributor {
                 // the amount of BNTY to award is the wei contributed divided by the fixed rate of WEI per BNTY
                 uint numTokens = weiContributed.mul(PRESALE_FIXED_RATE);
 
-                // we will run out of presale tokens at the very end
-                uint tokensToPay = Math.min(bounty0xToken.balanceOf(this), numTokens);
+                // we shouldn't run out of presale tokens at the very end, but in case we do...
+                uint tokensToPay = Math.min256(bounty0xToken.balanceOf(this), numTokens);
 
                 // mark them paid first
                 tokensPaid[investorAddress] = tokensToPay;
