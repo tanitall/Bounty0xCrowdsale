@@ -10,4 +10,5 @@ contract('Bounty0xCrowdsale', function (accounts) {
   it('should be deployed', () => {
     assert.strictEqual(typeof bounty0xcrowdsale.address, 'string');
   });
+
 });
