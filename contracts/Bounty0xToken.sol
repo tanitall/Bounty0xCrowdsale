@@ -3,7 +3,7 @@ pragma solidity ^0.4.11;
 import "minimetoken/contracts/MiniMeToken.sol";
 
 contract Bounty0xToken is MiniMeToken {
-    function Bounty0xToken(address _controller, address _tokenFactory)
+    function Bounty0xToken(address _tokenFactory)
         MiniMeToken(
             _tokenFactory,
             0x0,                        // no parent token
@@ -15,6 +15,5 @@ contract Bounty0xToken is MiniMeToken {
         )
         public
     {
-        changeController(_controller);
     }
 }

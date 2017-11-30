@@ -70,8 +70,6 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         founder3 = _founder3;
         bounty0xWallet = _bounty0xWallet;
         advisers = _advisers;
-
-        createBounty0xToken();
     }
 
 
@@ -115,24 +113,52 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     //  Generates all BNTY tokens and assigns them to this contract
     //  If token contract has already generated tokens, do not generate again
     //  @param _Bounty0xToken Bounty0xToken address
-    function createBounty0xToken() private {
-        // deploy the bounty0x token
-        bounty0xToken = new Bounty0xToken(this, 0x0);
-
-        // generate all the tokens that will need to be distributed
-        bounty0xToken.generateTokens(
-                this,
-                MAINSALE_POOL
-                    .add(PRESALE_POOL)
-                    .add(FOUNDER1_STAKE)
-                    .add(FOUNDER2_STAKE)
-                    .add(FOUNDER3_STAKE)
-                    .add(BOUNTY0X_RESERVE)
-                    .add(ADVISORS_POOL)
-        );
+    function setBounty0xToken(address _bounty0xToken) public onlyOwner {
+        bounty0xToken = Bounty0xToken(_bounty0xToken);
 
         // double check the supply is as expected
-        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY);
+        require(bounty0xToken.totalSupply() == 0);
+
+        uint totalSupply = MAINSALE_POOL
+            .add(PRESALE_POOL)
+            .add(FOUNDER1_STAKE)
+            .add(FOUNDER2_STAKE)
+            .add(FOUNDER3_STAKE)
+            .add(BOUNTY0X_RESERVE)
+            .add(ADVISORS_POOL);
+
+        // generate all the tokens that will need to be distributed
+        bounty0xToken.generateTokens(this, totalSupply);
+
+        // double check the supply is as expected
+        assert(bounty0xToken.totalSupply() == totalSupply);
+    }
+
+    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
+    /// @param _owner The address that sent the ether to create tokens
+    /// @return True if the ether is accepted, false if it throws
+    function proxyPayment(address _owner) public payable returns(bool) {
+        return false;
+    }
+
+    /// @notice Notifies the controller about a token transfer allowing the
+    ///  controller to react if desired
+    /// @param _from The origin of the transfer
+    /// @param _to The destination of the transfer
+    /// @param _amount The amount of the transfer
+    /// @return False if the controller does not authorize the transfer
+    function onTransfer(address _from, address _to, uint _amount) public returns(bool) {
+        return false;
+    }
+
+    /// @notice Notifies the controller about an approval allowing the
+    ///  controller to react if desired
+    /// @param _owner The address that calls `approve()`
+    /// @param _spender The spender in the `approve()` call
+    /// @param _amount The amount in the `approve()` call
+    /// @return False if the controller does not authorize the approval
+    function onApprove(address _owner, address _spender, uint _amount) public  returns(bool) {
+        return false;
     }
 
     // @notice Method for setting up contribution period

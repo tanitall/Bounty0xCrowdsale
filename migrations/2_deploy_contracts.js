@@ -1,5 +1,6 @@
-const Bounty0xToken = artifacts.require('./Bounty0xToken.sol');
-const Bounty0xCrowdsale = artifacts.require('./Bounty0xCrowdsale.sol');
+const Bounty0xToken = artifacts.require('Bounty0xToken');
+const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
+const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 
 const founder1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
 const founder2 = '0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5';
@@ -13,7 +14,26 @@ const advisors = [
   '0x264dfc4f90a58ed2e5be3fb5378e511c468f198f'
 ];
 
-module.exports = function (deployer) {
-  deployer.deploy(Bounty0xToken);
-  //deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors);
+module.exports = function (deployer, network, accounts) {
+  deployer
+    // create a new minime factory for the bounty0x token
+    .then(() => {
+      return MiniMeTokenFactory.new();
+    })
+    // deploy the bounty0x token
+    .then(miniMeTokenFactory => {
+      return deployer.deploy(Bounty0xToken, miniMeTokenFactory.address);
+    })
+    // deploy the crowdsale contract
+    .then(() => {
+      return deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors, { gas: 3000000 });
+    })
+    // initialize the bounty0x controller
+    .then(async () => {
+      const bounty0xCrowdsale = await Bounty0xCrowdsale.deployed();
+      const bounty0xToken = await Bounty0xToken.deployed();
+
+      const setControllerTx = await bounty0xToken.changeController(bounty0xCrowdsale.address);
+      const setBounty0xTokenTx = await bounty0xCrowdsale.setBounty0xToken(bounty0xToken.address);
+    });
 };
