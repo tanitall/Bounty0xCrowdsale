@@ -14,9 +14,11 @@ const advisors = [
   '0x264dfc4f90a58ed2e5be3fb5378e511c468f198f'
 ];
 
+const PRESALE_CONTRACT_ADDRESS = '0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea';
+
 module.exports = function (deployer, network, accounts) {
   deployer
-    // create a new minime factory for the bounty0x token
+  // create a new minime factory for the bounty0x token
     .then(() => {
       return MiniMeTokenFactory.new();
     })
@@ -26,7 +28,7 @@ module.exports = function (deployer, network, accounts) {
     })
     // deploy the crowdsale contract
     .then(() => {
-      return deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors, { gas: 3000000 });
+      return deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors, { gas: 5000000 });
     })
     // initialize the bounty0x controller
     .then(async () => {
@@ -35,5 +37,12 @@ module.exports = function (deployer, network, accounts) {
 
       const setControllerTx = await bounty0xToken.changeController(bounty0xCrowdsale.address);
       const setBounty0xTokenTx = await bounty0xCrowdsale.setBounty0xToken(bounty0xToken.address);
+
+      return bounty0xCrowdsale;
+    })
+    .then(async (bounty0xCrowdsale) => {
+      // create the presale distributor
+      const createPresaleDistributor =
+        await bounty0xCrowdsale.createBounty0xPresaleDistributor(PRESALE_CONTRACT_ADDRESS);
     });
 };
