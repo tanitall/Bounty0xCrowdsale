@@ -51,10 +51,10 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
 
     // Vesting conditions
-    uint public constant TEAM_VESTING_CLIFF = 1 weeks;                  // 1 week vesting cliff for founders and advisers
+    uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // 1 week vesting cliff for founders and advisers
     uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisers
 
-    uint public constant ADVISERS_VESTING_CLIFF = 1 weeks;              // 1 week cliff for ADVISERS
+    uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // 1 week cliff for ADVISERS
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
 
     mapping(address => TokenVesting) vestingContracts;
