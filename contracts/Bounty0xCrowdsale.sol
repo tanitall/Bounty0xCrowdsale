@@ -14,6 +14,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     Bounty0xPresaleDistributor public presaleDistributor;               // contract that manages distributing presale awards
 
+    address public multiSigWallet                                       // Multi-sig wallet to transfer contributions to
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
     address public founder3;                                            // Wallet of founder 3
@@ -46,6 +47,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
     bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
     bool public hardCapReached = false;                                 // If hard cap was reached
+    bool public whitelistFilteringActive = true;                         // Whitelist filtering is defaulted true for first 24 hours
     bool private saleRunning;                                           // Check sale active
 
     uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
@@ -64,9 +66,10 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
     event OnHardCapReached(uint endTime);
 
-    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
+    function Bounty0xCrowdsale(address _multiSigWallet, address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
         require(_advisers.length == 4);
 
+        multiSigWallet = _multiSigWallet;
         advisers = _advisers;
         founder1 = _founder1;
         founder2 = _founder2;
@@ -84,11 +87,13 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         uint256 contributionAmount = msg.value;
         require(contributionAmount > 0);
 
-        if (now <= WHITELIST_END_DATE) {
-            require(bounty0xToken.balanceOf(msg.sender).add(contributionAmount) <= maximumParticipationAmount);
-            require(whitelistContributors[msg.sender]);
-        } else {
-            increasePerCapAfterWhitelistPeriod();
+        if (whitelistFilteringActive) {
+            if (now < WHITELIST_END_DATE) {
+                require(bounty0xToken.balanceOf(msg.sender).add(contributionAmount) <= maximumParticipationAmount);
+                require(whitelistContributors[msg.sender]);
+            } else if (now > WHITELIST_END_DATE) {
+                increasePerCapAfterWhitelistPeriod();
+            }
         }
 
         // calculate token amount to be minted and sent back to contributor
@@ -184,9 +189,15 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         return true;
     }
 
+    // @notice Kill method should not really be needed, but just in case
+    function kill(address _to) onlyOwner external {
+        selfDestruct(_to);
+    }
+
     // Internal function to increase per person cap to $10k after first 24 hours of crowdsale
     function increasePerCapAfterWhitelistPeriod() internal {
         maximumParticipationAmount = 21 ether;
+        whitelistFilteringActive = false;
     }
 
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
