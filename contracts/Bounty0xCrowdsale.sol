@@ -28,9 +28,10 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000;           // maximum BNTY tokens to be minted at any given point
     uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH
     uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in WEI
-    uint256 public constant MAX_GAS_PRICE = 20 * (10 ** 9);             // 20 gwei (in wei)
+    uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 20 gwei (in wei)
 
     uint256 public constant SALE_START_DATE = 1513350000;               // in unix timestamp Dec 15th @ 15:00 CET
+    uint256 public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours;  // End whitelist 24 hours after sale start date/time
     uint256 public constant SALE_END_DATE = SALE_START_DATE + 4 weeks;  // end sale in four weeks
     uint256 public constant UNFREEZE_DATE = SALE_START_DATE + 76 weeks; // Bounty0x Reserve locked for 18 months
 
@@ -39,14 +40,13 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 public constant FOUNDER1_STAKE = 60000000;                  // 60M BNTY
     uint256 public constant FOUNDER2_STAKE = 45000000;                  // 45M BNTY
     uint256 public constant FOUNDER3_STAKE = 45000000;                  // 45M BNTY
-    uint256 public constant BOUNTY0X_RESERVE = 225150000;               // 225.15M BNTY Bounty0x Reserve Pool
+    uint256 public constant BOUNTY0X_RESERVE= 225150000;                // 225.15M BNTY Bounty0x Reserve Pool
     uint256 public constant ADVISERS_POOL = 15000000;                   // 15M BNTY Advisers Pool
     uint256 public totalContributed;                                    // Total amount of ETH contributed in given period
 
     bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
     bool public hardCapReached = false;                                 // If hard cap was reached
     bool private saleRunning;                                           // Check sale active
-    bool private whitelistIsActive = true;                              // Whitelist is active first 24
 
     uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
 
@@ -84,9 +84,11 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         uint256 contributionAmount = msg.value;
         require(contributionAmount > 0);
 
-        if (whitelistIsActive) {
+        if (now <= WHITELIST_END_DATE) {
             require(bounty0xToken.balanceOf(msg.sender).add(contributionAmount) <= maximumParticipationAmount);
             require(whitelistContributors[msg.sender]);
+        } else {
+            increasePerCapAfterWhitelistPeriod();
         }
 
         // calculate token amount to be minted and sent back to contributor
@@ -180,6 +182,11 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         vestingContracts[founder3] = vestingFounder3;
 
         return true;
+    }
+
+    // Internal function to increase per person cap to $10k after first 24 hours of crowdsale
+    function increasePerCapAfterWhitelistPeriod() internal {
+        maximumParticipationAmount = 21 ether;
     }
 
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
