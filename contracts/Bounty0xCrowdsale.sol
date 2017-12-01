@@ -28,7 +28,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000;           // maximum BNTY tokens to be minted at any given point
     uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH
     uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in WEI
-    uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 20 gwei (in wei)
+    uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 30 gwei (in wei)
 
     uint256 public constant SALE_START_DATE = 1513350000;               // in unix timestamp Dec 15th @ 15:00 CET
     uint256 public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours;  // End whitelist 24 hours after sale start date/time
