@@ -6,15 +6,28 @@ const PRESALE_PRICE = 13200;
 const TEST_CASES = [
   {
     ethPriceUSD: 355,
-    bntyMicrocentPrice: PRESALE_PRICE,
-    ethAmt: 1,
-    expectedBnty: 355 / 0.0132
+    bntyMicrodollarPrice: PRESALE_PRICE,
+    ethAmt: 1
   },
   {
     ethPriceUSD: 460,
-    bntyMicrocentPrice: CROWDSALE_PRICE,
-    ethAmt: 3.15,
-    expectedBnty: (460 / 0.0165) * 3.15
+    bntyMicrodollarPrice: CROWDSALE_PRICE,
+    ethAmt: 3.15
+  },
+  {
+    ethPriceUSD: 460,
+    bntyMicrodollarPrice: CROWDSALE_PRICE,
+    ethAmt: 10
+  },
+  {
+    ethPriceUSD: 355,
+    bntyMicrodollarPrice: PRESALE_PRICE,
+    ethAmt: 0.1
+  },
+  {
+    ethPriceUSD: 460,
+    bntyMicrodollarPrice: CROWDSALE_PRICE,
+    ethAmt: 0.1
   },
 ];
 
@@ -38,11 +51,11 @@ function withinPercentage(actual, expected, percentage = 0.1) {
 contract('BntyExchangeRateCalculator', function (accounts) {
   _.each(
     TEST_CASES,
-    ({ ethPriceUSD, bntyMicrocentPrice, ethAmt, expectedBnty }) => {
-      describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: ${bntyMicrocentPrice * Math.pow(10, -6)}`, async () => {
+    ({ ethPriceUSD, bntyMicrodollarPrice, ethAmt }) => {
+      describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: $${bntyMicrodollarPrice * Math.pow(10, -6)}`, async () => {
         let calculator;
         before(async () => {
-          calculator = await BntyExchangeRateCalculator.new(bntyMicrocentPrice, ethPriceUSD);
+          calculator = await BntyExchangeRateCalculator.new(bntyMicrodollarPrice, ethPriceUSD);
         });
 
         it(
@@ -50,7 +63,8 @@ contract('BntyExchangeRateCalculator', function (accounts) {
           async () => {
             const rewardFor = await calculator.weiToBnty(ethAmt * Math.pow(10, 18));
 
-            withinPercentage(rewardFor, expectedBnty * Math.pow(10, 18));
+            const bntyUsdPrice = bntyMicrodollarPrice * Math.pow(10, -6);
+            withinPercentage(rewardFor, (ethPriceUSD * ethAmt / bntyUsdPrice) * Math.pow(10, 18));
           }
         );
 

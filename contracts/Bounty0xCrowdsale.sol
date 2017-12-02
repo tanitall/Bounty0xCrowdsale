@@ -11,6 +11,7 @@ import './BntyExchangeRateCalculator.sol';
 import './KnowsConstants.sol';
 import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
+import './Bounty0xReserveHolder.sol';
 
 contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownable, AddressWhitelist, Pausable, TokenController {
     using SafeMath for uint;
@@ -18,6 +19,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
     // Crowdsale contracts
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     Bounty0xPresaleDistributor public presaleDistributor;               // contract that manages distributing presale awards
+    Bounty0xReserveHolder public bounty0xReserveHolder;               // contract that manages distributing presale awards
 
     // Special addresses
     address public founder1;                                            // Wallet of founder 1
@@ -168,11 +170,31 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
         return true;
     }
 
+    // create the founder token vesting contract for a team member
     function createFounderTokenVestingContract(address founder, uint stake) private returns (address) {
         TokenVesting vesting = new TokenVesting(founder, SALE_START_DATE, TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
         bounty0xToken.transfer(founder, stake.mul(10 ** 18));
         return vesting;
     }
+
+    // This function call distributes the reserve tokens
+    function setBounty0xReserveHolder(Bounty0xReserveHolder _bounty0xReserveHolder) public onlyOwner returns (bool success) {
+        require(bounty0xReserveHolder == address(0));
+        require(_bounty0xReserveHolder != address(0));
+        require(bounty0xToken != address(0));
+
+        bounty0xReserveHolder = _bounty0xReserveHolder;
+
+        // check the balance is 0
+        assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == 0);
+
+        // send it the reserve pool
+        bounty0xToken.transfer(bounty0xReserveHolder, BOUNTY0X_RESERVE.mul(10 ** 18));
+
+        // assert the balance was transferred
+        assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == BOUNTY0X_RESERVE.mul(10 ** 18));
+    }
+
 
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens

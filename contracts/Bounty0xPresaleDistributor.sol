@@ -33,7 +33,7 @@ contract Bounty0xPresaleDistributor is KnowsConstants, BntyExchangeRateCalculato
     /**
      * Compensate the presale investors at the addresses provider based on their contributions during the presale
      */
-    function compensatePreSaleInvestors(address[] preSaleInvestors) public {
+    function compensatePreSaleInvestors(address[] preSaleInvestors) public onlyOwner {
         // iterate through each investor
         for (uint i = 0; i < preSaleInvestors.length; i++) {
             address investorAddress = preSaleInvestors[i];

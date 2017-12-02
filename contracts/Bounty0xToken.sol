@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import "minimetoken/contracts/MiniMeToken.sol";
+import 'minimetoken/contracts/MiniMeToken.sol';
 
 contract Bounty0xToken is MiniMeToken {
     function Bounty0xToken(address _tokenFactory)
