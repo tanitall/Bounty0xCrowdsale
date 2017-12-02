@@ -19,6 +19,14 @@ const TEST_CASES = [
 ];
 
 function withinPercentage(actual, expected, percentage = 0.1) {
+  if (expected === 0) {
+    if (actual.valueOf() === '0') {
+      return;
+    } else {
+      throw new Error('division by 0');
+    }
+  }
+
   const percent = actual.sub(String(expected)).abs().div(String(expected)).mul(100);
 
   assert.strictEqual(
@@ -46,14 +54,19 @@ contract('BntyExchangeRateCalculator', function (accounts) {
           }
         );
 
-        it(
-          `calculates WEI per USD correctly`,
-          async () => {
-            const usdToWei = await calculator.usdToWei(1500);
+        describe('#usdToWei', async () => {
 
-            withinPercentage(usdToWei, (1500 / ethPriceUSD) * Math.pow(10, 18));
+          for (let testUsdAmt = 0; testUsdAmt < 1500000; testUsdAmt = testUsdAmt === 0 ? 50 : testUsdAmt * 2) {
+            it(
+              `calculates WEI per USD correctly for $${testUsdAmt}`, async () => {
+                const usdToWei = await calculator.usdToWei(testUsdAmt);
+
+                withinPercentage(usdToWei, (testUsdAmt / ethPriceUSD) * Math.pow(10, 18));
+              }
+            );
           }
-        );
+
+        });
       });
     }
   );
