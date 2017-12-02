@@ -1,15 +1,16 @@
 pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/token/Timelock.sol';
 import './KnowsConstants.sol';
+import 'zeppelin-solidity/contracts/token/TokenTimelock.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
-// Contract holder for the reserves
-// has additional function that allows it to add team members, that will all have the same vesting period so as
-// to prevent the contract from being called to release tokens early
-contract Bounty0xReserveHolder is TokenTimelock, KnowsConstants {
-    function Bounty0xReserveHolder(){
+// Contract that holds the reserves
+// has additional function that allows the owner to add team members,
+// distributing some of the reserves to a vested token contract
+contract Bounty0xReserveHolder is TokenTimelock, KnowsConstants, Ownable {
+    function Bounty0xReserveHolder() public {
     }
 
-    function addTeamMember(address wallet) {
+    function addTeamMember(address wallet) public onlyOwner {
     }
 }
