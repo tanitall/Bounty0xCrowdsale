@@ -14,21 +14,18 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     Bounty0xPresaleDistributor public presaleDistributor;               // contract that manages distributing presale awards
 
-    address public multiSigWallet                                       // Multi-sig wallet to transfer contributions to
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
     address public founder3;                                            // Wallet of founder 3
-    address public bounty0xWallet;                                      // Bounty0x Wallet
+    address public bounty0xWallet;                                      // Bounty0x Wallet multig wallet for contributions
     address[] public advisers;                                          // 4 Wallets of advisers
     mapping (address => bool) public whitelistContributors;
 
     // Crowdsale Conditions
     mapping (address => uint256) public contributors;
-    uint256 public maximumParticipationAmount = 3.16 ether;             // Maximum initial constribution cap per person
-    uint256 public constant MINIMUM_PARTICIPATION_AMOUNT = 0.1 ether;   // IN ETH minimum one can contribute
     uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000;           // maximum BNTY tokens to be minted at any given point
-    uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH
-    uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in WEI
+    uint256 public constant HARD_CAP_AMOUNT = 3260000000000000000000;   // in wei
+    uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in wei
     uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 30 gwei (in wei)
 
     uint256 public constant SALE_START_DATE = 1513350000;               // in unix timestamp Dec 15th @ 15:00 CET
@@ -47,16 +44,14 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
     bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
     bool public hardCapReached = false;                                 // If hard cap was reached
-    bool public whitelistFilteringActive = true;                         // Whitelist filtering is defaulted true for first 24 hours
-    bool private saleRunning;                                           // Check sale active
 
     uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
 
     // Vesting conditions
-    uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // 1 week vesting cliff for founders and advisers
+    uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // 0 week vesting cliff for founders and advisers
     uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisers
 
-    uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // 1 week cliff for ADVISERS
+    uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // 0 week cliff for ADVISERS
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
 
     mapping(address => TokenVesting) vestingContracts;
@@ -78,7 +73,6 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     }
 
     function () payable public whenNotPaused {
-        require(saleRunning);
         require(tx.gasprice <= MAX_GAS_PRICE);
 
         // make sure tokens left is more than zero
@@ -86,15 +80,12 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         uint256 contributionAmount = msg.value;
         require(contributionAmount > 0);
-
-        if (whitelistFilteringActive) {
-            if (now < WHITELIST_END_DATE) {
-                require(bounty0xToken.balanceOf(msg.sender).add(contributionAmount) <= maximumParticipationAmount);
-                require(whitelistContributors[msg.sender]);
-            } else if (now > WHITELIST_END_DATE) {
-                increasePerCapAfterWhitelistPeriod();
-            }
+        
+        if (now < WHITELIST_END_DATE) {
+            require(whitelistContributors[msg.sender]);
         }
+
+        require(contributors[msg.sender].add(contributionAmount) <= getContributionCap()); // Checking total balance of contributor does not exceed cap
 
         // calculate token amount to be minted and sent back to contributor
         uint256 numTokens = contributionAmount.div(MAINSALE_FIX_RATE);
@@ -104,6 +95,9 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         // update funding state
         totalContributed = totalContributed.add(contributionAmount);
+
+        // Track balance of each contributor for check against per cap
+        contributors[msg.sender].push(contributionAmount);
 
         // make sure total is not more than HARD_CAP
         require(totalContributed <= HARD_CAP_AMOUNT);
@@ -189,17 +183,14 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         return true;
     }
 
-    // @notice Kill method should not really be needed, but just in case
-    function kill(address _to) onlyOwner external {
-        selfDestruct(_to);
+    function getContributionCap() internal returns (uint256) {
+        if (now < WHITELIST_END_DATE) {
+            return 3160000000000000000;
+        } else {
+            return 21000000000000000000;
+        }
     }
-
-    // Internal function to increase per person cap to $10k after first 24 hours of crowdsale
-    function increasePerCapAfterWhitelistPeriod() internal {
-        maximumParticipationAmount = 21 ether;
-        whitelistFilteringActive = false;
-    }
-
+    
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens
     /// @return True if the ether is accepted, false if it throws
