@@ -61,10 +61,9 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
     event OnHardCapReached(uint endTime);
 
-    function Bounty0xCrowdsale(address _multiSigWallet, address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
+    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
         require(_advisers.length == 4);
 
-        multiSigWallet = _multiSigWallet;
         advisers = _advisers;
         founder1 = _founder1;
         founder2 = _founder2;
