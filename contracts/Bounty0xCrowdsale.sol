@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import 'minimetoken/contracts/TokenController.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/token/TokenVesting.sol';
@@ -11,7 +12,7 @@ import './KnowsConstants.sol';
 import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
 
-contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, AddressWhitelist, Pausable, TokenController {
+contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownable, AddressWhitelist, Pausable, TokenController {
     using SafeMath for uint;
 
     // Crowdsale contracts
