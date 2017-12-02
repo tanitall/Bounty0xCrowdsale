@@ -2,12 +2,12 @@ const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 
-const founder1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
-const founder2 = '0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5';
-const founder3 = '0xb2427291cb661a2ed72c1e66a9fe2faffbb67b2f';
-const bounty0Wallet = '0xc9afbf88b36a5c4a0a8a41918552e24a5c3a1958';
+const FOUNDER_1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
+const FOUNDER_2 = '0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5';
+const FOUNDER_3 = '0xb2427291cb661a2ed72c1e66a9fe2faffbb67b2f';
+const BOUNTY0X_WALLET = '0xc9afbf88b36a5c4a0a8a41918552e24a5c3a1958';
 
-const advisors = [
+const ADVISERS = [
   '0x35e3fa8f6bdb38af7b657866ef39ebe43d9875c2',
   '0xd7383e030e7d277a000eb22fa3dede2ccacd9983',
   '0xf40c533cd70624b361d02884c46840cfb2e4f40c',
@@ -15,6 +15,8 @@ const advisors = [
 ];
 
 const PRESALE_CONTRACT_ADDRESS = '0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea';
+
+const USD_ETHER_PRICE = 450;
 
 module.exports = function (deployer, network, accounts) {
   deployer
@@ -28,7 +30,7 @@ module.exports = function (deployer, network, accounts) {
     })
     // deploy the crowdsale contract
     .then(() => {
-      return deployer.deploy(Bounty0xCrowdsale, founder1, founder2, founder3, bounty0Wallet, advisors, { gas: 5000000 });
+      return deployer.deploy(Bounty0xCrowdsale, USD_ETHER_PRICE, FOUNDER_1, FOUNDER_2, FOUNDER_3, BOUNTY0X_WALLET, ADVISERS, { gas: 6000000 });
     })
     // initialize the bounty0x controller
     .then(async () => {

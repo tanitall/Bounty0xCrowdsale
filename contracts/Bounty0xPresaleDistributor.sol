@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/math/Math.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Bounty0xToken.sol';
 import './interfaces/Bounty0xPresaleI.sol';
 
@@ -9,7 +10,7 @@ import './interfaces/Bounty0xPresaleI.sol';
 This contract manages compensation of the presale investors, based on the contribution balances recorded in the presale
 contract.
 */
-contract Bounty0xPresaleDistributor {
+contract Bounty0xPresaleDistributor is Ownable {
     using SafeMath for uint;
 
     // $355.00 USD/ETH / 0.0132 USD/BNTY == 26,893.9393939394 BNTY/ETH
@@ -33,8 +34,11 @@ contract Bounty0xPresaleDistributor {
 
     event OnPreSaleBuyerCompensated(address indexed contributor, uint numTokens);
 
-    // anyone can call this to distribute tokens to the presale investors
+    /**
+     * Compensate the presale investors at the addresses provider based on their contributions during the presale
+     */
     function compensatePreSaleInvestors(address[] preSaleInvestors) public {
+        // iterate through each investor
         for (uint i = 0; i < preSaleInvestors.length; i++) {
             address investorAddress = preSaleInvestors[i];
 
