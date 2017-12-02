@@ -17,20 +17,19 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
     address public founder3;                                            // Wallet of founder 3
-    address public bounty0xWallet;                                      // Bounty0x Wallet
+    address public bounty0xWallet;                                      // Bounty0x Wallet multig wallet for contributions
     address[] public advisers;                                          // 4 Wallets of advisers
     mapping (address => bool) public whitelistContributors;
 
     // Crowdsale Conditions
     mapping (address => uint256) public contributors;
-    uint256 public maximumParticipationAmount = 3.16 ether;             // Maximum initial constribution cap per person
-    uint256 public constant MINIMUM_PARTICIPATION_AMOUNT = 0.1 ether;   // IN ETH minimum one can contribute
     uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000;           // maximum BNTY tokens to be minted at any given point
-    uint256 public constant HARD_CAP_AMOUNT = 3260 ether;               // in ETH
-    uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in WEI
-    uint256 public constant MAX_GAS_PRICE = 20 * (10 ** 9);             // 20 gwei (in wei)
+    uint256 public constant HARD_CAP_AMOUNT = 3260000000000000000000;   // in wei
+    uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in wei
+    uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 30 gwei (in wei)
 
     uint256 public constant SALE_START_DATE = 1513350000;               // in unix timestamp Dec 15th @ 15:00 CET
+    uint256 public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours;  // End whitelist 24 hours after sale start date/time
     uint256 public constant SALE_END_DATE = SALE_START_DATE + 4 weeks;  // end sale in four weeks
     uint256 public constant UNFREEZE_DATE = SALE_START_DATE + 76 weeks; // Bounty0x Reserve locked for 18 months
 
@@ -39,22 +38,20 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     uint256 public constant FOUNDER1_STAKE = 60000000;                  // 60M BNTY
     uint256 public constant FOUNDER2_STAKE = 45000000;                  // 45M BNTY
     uint256 public constant FOUNDER3_STAKE = 45000000;                  // 45M BNTY
-    uint256 public constant BOUNTY0X_RESERVE = 225150000;               // 225.15M BNTY Bounty0x Reserve Pool
+    uint256 public constant BOUNTY0X_RESERVE= 225150000;                // 225.15M BNTY Bounty0x Reserve Pool
     uint256 public constant ADVISERS_POOL = 15000000;                   // 15M BNTY Advisers Pool
     uint256 public totalContributed;                                    // Total amount of ETH contributed in given period
 
     bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
     bool public hardCapReached = false;                                 // If hard cap was reached
-    bool private saleRunning;                                           // Check sale active
-    bool private whitelistIsActive = true;                              // Whitelist is active first 24
 
     uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
 
     // Vesting conditions
-    uint public constant TEAM_VESTING_CLIFF = 1 weeks;                  // 1 week vesting cliff for founders and advisers
+    uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // 0 week vesting cliff for founders and advisers
     uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisers
 
-    uint public constant ADVISERS_VESTING_CLIFF = 1 weeks;              // 1 week cliff for ADVISERS
+    uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // 0 week cliff for ADVISERS
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
 
     mapping(address => TokenVesting) vestingContracts;
@@ -75,7 +72,6 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     }
 
     function () payable public whenNotPaused {
-        require(saleRunning);
         require(tx.gasprice <= MAX_GAS_PRICE);
 
         // make sure tokens left is more than zero
@@ -83,11 +79,12 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         uint256 contributionAmount = msg.value;
         require(contributionAmount > 0);
-
-        if (whitelistIsActive) {
-            require(bounty0xToken.balanceOf(msg.sender).add(contributionAmount) <= maximumParticipationAmount);
+        
+        if (now < WHITELIST_END_DATE) {
             require(whitelistContributors[msg.sender]);
         }
+
+        require(contributors[msg.sender].add(contributionAmount) <= getContributionCap()); // Checking total balance of contributor does not exceed cap
 
         // calculate token amount to be minted and sent back to contributor
         uint256 numTokens = contributionAmount.div(MAINSALE_FIX_RATE);
@@ -97,6 +94,9 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
 
         // update funding state
         totalContributed = totalContributed.add(contributionAmount);
+
+        // Track balance of each contributor for check against per cap
+        contributors[msg.sender].push(contributionAmount);
 
         // make sure total is not more than HARD_CAP
         require(totalContributed <= HARD_CAP_AMOUNT);
@@ -182,6 +182,14 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         return true;
     }
 
+    function getContributionCap() internal returns (uint256) {
+        if (now < WHITELIST_END_DATE) {
+            return 3160000000000000000;
+        } else {
+            return 21000000000000000000;
+        }
+    }
+    
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens
     /// @return True if the ether is accepted, false if it throws
