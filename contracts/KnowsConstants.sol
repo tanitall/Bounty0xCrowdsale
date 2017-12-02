@@ -31,7 +31,7 @@ contract KnowsConstants {
 
     // Vesting conditions
     uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // no cliff
-    uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders
+    uint public constant TEAM_VESTING_PERIOD = 72 weeks;                // 18 month vesting period for founders
     uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // no cliff
     uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting period for ADVISERS
 
