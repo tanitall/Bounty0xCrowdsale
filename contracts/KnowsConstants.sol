@@ -3,6 +3,7 @@ pragma solidity ^0.4.18;
 // These are the specifications of the contract, unlikely to change
 contract KnowsConstants {
     // The fixed USD price per BNTY
+    uint public constant FIXED_PRESALE_USD_ETHER_PRICE = 355;
     uint public constant MICRO_DOLLARS_PER_BNTY_MAINSALE = 16500;
     uint public constant MICRO_DOLLARS_PER_BNTY_PRESALE = 13200;
 
