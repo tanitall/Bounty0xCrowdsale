@@ -29,6 +29,8 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
     // Contribution amounts
     mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
     uint public totalContributions;                                  // Total contributions given
+
+    // Constants derived from the USD price of ether
     uint public maxPresaleContributionsWei;
     uint public maxPublicSaleContributionsWei;
     uint public hardCapWei;
@@ -50,7 +52,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
 
         maxPresaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST);
         maxPublicSaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST);
-        hardCapWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST);
+        hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
 
 
@@ -111,7 +113,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
             .add(FOUNDER3_STAKE)
             .add(BOUNTY0X_RESERVE)
             .add(ADVISERS_POOL)
-            .mul(10**18);
+            .mul(10 ** 18);
 
         // generate all the tokens that will need to be distributed
         require(bounty0xToken.generateTokens(this, totalSupply));
@@ -120,19 +122,26 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
         assert(bounty0xToken.totalSupply() == bounty0xToken.balanceOf(this));
 
         // check that the total supply is 500M
-        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY.mul(10**18));
+        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY.mul(10 ** 18));
     }
 
     // Create the contract responsible for distributing presale bounties based on the presale contract
-    function createBounty0xPresaleDistributor(Bounty0xPresaleI bounty0xPresale) public onlyOwner returns (bool success) {
+    function setBounty0xPresaleDistributor(Bounty0xPresaleDistributor _presaleDistributor) public onlyOwner returns (bool success) {
         require(presaleDistributor == address(0));
+        require(_presaleDistributor != address(0));
         require(bounty0xToken != address(0));
 
-        // create a presale distributor contract
-        presaleDistributor = new Bounty0xPresaleDistributor(bounty0xToken, bounty0xPresale);
+        // assign the presaleDistributor contract address
+        presaleDistributor = _presaleDistributor;
 
-        // fund the presale distributor
+        // assert the presale distributor contract has no balance yet
+        assert(bounty0xToken.balanceOf(presaleDistributor) == 0);
+
+        // fund the presale distributor contract
         bounty0xToken.transfer(presaleDistributor, PRESALE_POOL.mul(10 ** 18));
+
+        // assert the presale distributor contract has the presale pool in its balance
+        assert(bounty0xToken.balanceOf(presaleDistributor) == PRESALE_POOL.mul(10 ** 18));
 
         return true;
     }
@@ -142,27 +151,26 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
         require(!vestedTokensDistributed);
 
         // founder 1
-        TokenVesting vestingFounder1 = new TokenVesting(founder1, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder1), FOUNDER1_STAKE.mul(10 ** 18));
-
-        // founder 2
-        TokenVesting vestingFounder2 = new TokenVesting(founder2, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder2), FOUNDER2_STAKE.mul(10 ** 18));
-
-        // founder 3
-        TokenVesting vestingFounder3 = new TokenVesting(founder3, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder3), FOUNDER3_STAKE.mul(10 ** 18));
+        createFounderTokenVestingContract(founder1, FOUNDER1_STAKE);
+        createFounderTokenVestingContract(founder2, FOUNDER2_STAKE);
+        createFounderTokenVestingContract(founder3, FOUNDER3_STAKE);
 
         // adviser distribution amounts
         uint adviserDistributionAmount = ADVISERS_POOL.mul(10 ** 18).div(advisers.length);
 
         for (uint i = 0; i < advisers.length; i++) {
-            TokenVesting vesting = new TokenVesting(advisers[i], SALE_START_DATE, SALE_START_DATE + ADVISERS_VESTING_CLIFF, ADVISERS_VESTING_PERIOD, false);
-            bounty0xToken.transfer(address(vesting), adviserDistributionAmount);
+            TokenVesting vesting = new TokenVesting(advisers[i], SALE_START_DATE, ADVISERS_VESTING_CLIFF, ADVISERS_VESTING_PERIOD, false);
+            bounty0xToken.transfer(vesting, adviserDistributionAmount);
         }
 
         vestedTokensDistributed = true;
         return true;
+    }
+
+    function createFounderTokenVestingContract(address founder, uint stake) private returns (address) {
+        TokenVesting vesting = new TokenVesting(founder, SALE_START_DATE, TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
+        bounty0xToken.transfer(founder, stake.mul(10 ** 18));
+        return vesting;
     }
 
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract

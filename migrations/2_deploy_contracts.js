@@ -1,7 +1,9 @@
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
+const Bounty0xPresaleDistributor = artifacts.require('Bounty0xPresaleDistributor');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 
+//////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
 const FOUNDER_1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
 const FOUNDER_2 = '0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5';
 const FOUNDER_3 = '0xb2427291cb661a2ed72c1e66a9fe2faffbb67b2f';
@@ -16,35 +18,39 @@ const ADVISERS = [
 
 const PRESALE_CONTRACT_ADDRESS = '0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea';
 
-const USD_ETHER_PRICE = 450;
+const FIXED_CROWDSALE_USD_ETHER_PRICE = 450;
+//////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
 
 module.exports = function (deployer, network, accounts) {
-  deployer
-  // create a new minime factory for the bounty0x token
-    .then(() => {
-      return MiniMeTokenFactory.new();
-    })
-    // deploy the bounty0x token
-    .then(miniMeTokenFactory => {
-      return deployer.deploy(Bounty0xToken, miniMeTokenFactory.address);
-    })
-    // deploy the crowdsale contract
-    .then(() => {
-      return deployer.deploy(Bounty0xCrowdsale, USD_ETHER_PRICE, FOUNDER_1, FOUNDER_2, FOUNDER_3, BOUNTY0X_WALLET, ADVISERS, { gas: 6000000 });
-    })
-    // initialize the bounty0x controller
-    .then(async () => {
-      const bounty0xCrowdsale = await Bounty0xCrowdsale.deployed();
-      const bounty0xToken = await Bounty0xToken.deployed();
+  // helper function that deploys a contract via deployer and returns the deployed instance
+  const deploy = (Contract, ...args) => deployer.deploy(Contract, ...args)
+    .then(() => Contract.deployed());
 
+  deployer.then(
+    async () => {
+      // create a new minime factory for the bounty0x token, which it uses to clone itself
+      const miniMeTokenFactory = await deploy(MiniMeTokenFactory);
+
+      // deploy the bounty0x token
+      const bounty0xToken = await deploy(Bounty0xToken, miniMeTokenFactory.address);
+
+      // deploy the presale distributor contract
+      const bounty0xPresaleDistributor = await deploy(Bounty0xPresaleDistributor, bounty0xToken.address, PRESALE_CONTRACT_ADDRESS);
+
+      // deploy the crowdsale contract with its constants
+      const bounty0xCrowdsale = await deploy(Bounty0xCrowdsale, FIXED_CROWDSALE_USD_ETHER_PRICE, FOUNDER_1, FOUNDER_2, FOUNDER_3, BOUNTY0X_WALLET, ADVISERS, { gas: 6000000 });
+
+      // transfer the bounty0x token to the crowdsale contract
       const setControllerTx = await bounty0xToken.changeController(bounty0xCrowdsale.address);
+
+      // notify the bounty0x token to do its token setup
       const setBounty0xTokenTx = await bounty0xCrowdsale.setBounty0xToken(bounty0xToken.address);
 
-      return bounty0xCrowdsale;
-    })
-    .then(async (bounty0xCrowdsale) => {
-      // create the presale distributor
-      const createPresaleDistributor =
-        await bounty0xCrowdsale.createBounty0xPresaleDistributor(PRESALE_CONTRACT_ADDRESS);
-    });
+      // set the presale distributor contract
+      const setPresaleDistributorTx = await bounty0xCrowdsale.setBounty0xPresaleDistributor(bounty0xPresaleDistributor.address);
+
+      // distribute the vested tokens
+      const distributeVestedTokensTx = await bounty0xCrowdsale.distributeVestedTokens();
+    }
+  );
 };
