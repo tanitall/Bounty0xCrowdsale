@@ -37,7 +37,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
     event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
 
     function Bounty0xCrowdsale(uint fixedUSDEtherPrice, address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers)
-        BntyExchangeRateCalculator(fixedUSDEtherPrice)
+        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice)
         public
     {
         require(_advisers.length == 4);
@@ -60,7 +60,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Addres
         require(tx.gasprice <= MAX_GAS_PRICE);
 
         // require the sale has started
-        require(now > SALE_START_DATE);
+        require(now >= SALE_START_DATE);
 
         // require that the sale has not ended
         require(now < SALE_END_DATE);

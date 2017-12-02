@@ -1,25 +1,59 @@
 const BntyExchangeRateCalculator = artifacts.require('BntyExchangeRateCalculator');
 
+const CROWDSALE_PRICE = 16500;
+const PRESALE_PRICE = 13200;
+
 const TEST_CASES = [
-  { ethPriceUSD: 355, expectedBntyPerWei: 26893 }
+  {
+    ethPriceUSD: 355,
+    bntyMicrocentPrice: PRESALE_PRICE,
+    ethAmt: 1,
+    expectedBnty: 355 / 0.0132
+  },
+  {
+    ethPriceUSD: 460,
+    bntyMicrocentPrice: CROWDSALE_PRICE,
+    ethAmt: 3.15,
+    expectedBnty: (460 / 0.0165) * 3.15
+  },
 ];
 
-contract('Bounty0xCrowdsale', function (accounts) {
+function withinPercentage(actual, expected, percentage = 0.1) {
+  const percent = actual.sub(String(expected)).abs().div(String(expected)).mul(100);
+
+  assert.strictEqual(
+    percent.lessThan(percentage),
+    true
+  );
+}
+
+contract('BntyExchangeRateCalculator', function (accounts) {
   _.each(
     TEST_CASES,
-    ({ ethPriceUSD, expectedBntyPerWei }) => {
-      // deploy the BntyExchangeRateCalculator
-      it(`exchange rate calculator works at ETH price: $${ethPriceUSD}`, async () => {
-        const xchange = await BntyExchangeRateCalculator.new(ethPriceUSD);
+    ({ ethPriceUSD, bntyMicrocentPrice, ethAmt, expectedBnty }) => {
+      describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: ${bntyMicrocentPrice * Math.pow(10, -6)}`, async () => {
+        let calculator;
+        before(async () => {
+          calculator = await BntyExchangeRateCalculator.new(bntyMicrocentPrice, ethPriceUSD);
+        });
 
-        const rate = await xchange.bntyPerWei();
-        const oneEtherInUsd = await xchange.usdToWei(ethPriceUSD);
-        const halfEtherInUsd = await xchange.usdToWei(ethPriceUSD / 2);
+        it(
+          `calculates BNTY rewards correctly`,
+          async () => {
+            const rewardFor = await calculator.weiToBnty(ethAmt * Math.pow(10, 18));
 
-        assert.strictEqual(rate.valueOf(), '' + expectedBntyPerWei);
-        assert.strictEqual(oneEtherInUsd.valueOf(), '' + Math.pow(10, 18));
-        // this fails right now because of precision errors, off by about 0.3%
-        //assert.strictEqual(halfEtherInUsd.valueOf(), '' + 0.5 * Math.pow(10, 18));
+            withinPercentage(rewardFor, expectedBnty * Math.pow(10, 18));
+          }
+        );
+
+        it(
+          `calculates WEI per USD correctly`,
+          async () => {
+            const usdToWei = await calculator.usdToWei(1500);
+
+            withinPercentage(usdToWei, (1500 / ethPriceUSD) * Math.pow(10, 18));
+          }
+        );
       });
     }
   );

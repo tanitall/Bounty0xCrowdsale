@@ -2,6 +2,10 @@ pragma solidity ^0.4.18;
 
 // These are the specifications of the contract, unlikely to change
 contract KnowsConstants {
+    // The fixed USD price per BNTY
+    uint public constant MICRO_DOLLARS_PER_BNTY_MAINSALE = 16500;
+    uint public constant MICRO_DOLLARS_PER_BNTY_PRESALE = 13200;
+
     // Contribution constants
     uint public constant MINIMUM_PARTICIPATION_AMOUNT_USD = 50;                   // in USD the minimum contribution per address
     uint public constant HARD_CAP_AMOUNT_USD = 1500000;                           // in USD the maximum total collected amount
