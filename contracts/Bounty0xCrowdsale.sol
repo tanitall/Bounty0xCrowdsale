@@ -12,7 +12,7 @@ import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
 import './Bounty0xReserveHolder.sol';
 
-contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, BntyExchangeRateCalculator, Ownable, AddressWhitelist, Pausable {
+contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRateCalculator, AddressWhitelist, Pausable {
     using SafeMath for uint;
 
     // Crowdsale contracts
@@ -31,7 +31,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, BntyExchangeRateCalcula
     event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
 
     function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint fixedUSDEtherPrice)
-        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice)
+        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice, SALE_START_DATE)
         public
     {
         bounty0xToken = _bounty0xToken;

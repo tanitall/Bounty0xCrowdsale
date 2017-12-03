@@ -12,7 +12,7 @@ import './KnowsConstants.sol';
 This contract manages compensation of the presale investors, based on the contribution balances recorded in the presale
 contract.
 */
-contract Bounty0xPresaleDistributor is KnowsConstants, BntyExchangeRateCalculator, Ownable {
+contract Bounty0xPresaleDistributor is KnowsConstants, Ownable, BntyExchangeRateCalculator {
     using SafeMath for uint;
 
     Bounty0xPresaleI public deployedPresaleContract;
@@ -21,7 +21,7 @@ contract Bounty0xPresaleDistributor is KnowsConstants, BntyExchangeRateCalculato
     mapping(address => uint) public tokensPaid;
 
     function Bounty0xPresaleDistributor(Bounty0xToken _bounty0xToken, Bounty0xPresaleI _deployedPresaleContract)
-        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_PRESALE, FIXED_PRESALE_USD_ETHER_PRICE)
+        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_PRESALE, FIXED_PRESALE_USD_ETHER_PRICE, 0)
         public
     {
         bounty0xToken = _bounty0xToken;
