@@ -1,3 +1,5 @@
+import { withinPercentage } from './helpers/util';
+
 const BntyExchangeRateCalculator = artifacts.require('BntyExchangeRateCalculator');
 
 const CROWDSALE_PRICE = 16500;
@@ -30,23 +32,6 @@ const TEST_CASES = [
     ethAmt: 0.1
   },
 ];
-
-function withinPercentage(actual, expected, percentage = 0.1) {
-  if (expected === 0) {
-    if (actual.valueOf() === '0') {
-      return;
-    } else {
-      throw new Error('division by 0');
-    }
-  }
-
-  const percent = actual.sub(String(expected)).abs().div(String(expected)).mul(100);
-
-  assert.strictEqual(
-    percent.lessThan(percentage),
-    true
-  );
-}
 
 contract('BntyExchangeRateCalculator', function (accounts) {
   _.each(

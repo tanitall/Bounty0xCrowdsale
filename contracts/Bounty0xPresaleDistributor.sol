@@ -43,21 +43,17 @@ contract Bounty0xPresaleDistributor is KnowsConstants, BntyExchangeRateCalculato
 
             // they contributed and haven't been paid
             if (weiContributed > 0 && tokensPaid[investorAddress] == 0) {
-                // the amount of BNTY to award is the wei contributed divided by the fixed rate of WEI per BNTY
-                uint numTokens = weiToBnty(weiContributed);
-
-                // we can possibly run out of BNTY if every presale investor collects due to loss of precision with
-                // integer division
-                uint tokensToPay = Math.min256(bounty0xToken.balanceOf(this), numTokens);
+                // convert the amount of wei they contributed to the bnty
+                uint owedBntyTokens = weiToBnty(weiContributed);
 
                 // mark them paid first
-                tokensPaid[investorAddress] = tokensToPay;
+                tokensPaid[investorAddress] = owedBntyTokens;
 
                 // transfer tokens to presale contributor address
-                bounty0xToken.transfer(investorAddress, tokensToPay);
+                bounty0xToken.transfer(investorAddress, owedBntyTokens);
 
                 // log the event
-                OnPreSaleBuyerCompensated(investorAddress, tokensToPay);
+                OnPreSaleBuyerCompensated(investorAddress, owedBntyTokens);
             }
         }
     }

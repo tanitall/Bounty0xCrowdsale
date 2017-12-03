@@ -1,10 +1,10 @@
-import { ZERO_ADDRESS } from './util';
+import { ZERO_ADDRESS } from './helpers/util';
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 
-contract('Bounty0xToken', ([ tokenController ]) => {
+contract('Bounty0xToken', (accounts) => {
   let token;
   let crowdsale;
   let factory;
