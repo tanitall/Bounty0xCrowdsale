@@ -4,7 +4,7 @@ contract KnowsTime {
     function KnowsTime(){
     }
 
-    function currentTime() public returns (uint) {
+    function currentTime() public view returns (uint) {
         return now;
     }
 }
