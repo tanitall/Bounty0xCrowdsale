@@ -50,9 +50,6 @@ module.exports = function (deployer, network, accounts) {
         Bounty0xCrowdsale,
         bounty0xToken.address,
         FIXED_CROWDSALE_USD_ETHER_PRICE,
-        FOUNDER_1, FOUNDER_2, FOUNDER_3,
-        BOUNTY0X_WALLET,
-        ADVISERS,
         { gas: 6000000 }
       );
 

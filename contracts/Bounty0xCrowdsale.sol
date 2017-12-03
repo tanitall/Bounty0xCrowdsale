@@ -31,7 +31,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, BntyExchangeRateCalcula
     // Events
     event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
 
-    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint fixedUSDEtherPrice, address _bounty0xWallet, address[] _advisers)
+    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint fixedUSDEtherPrice)
         BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice)
         public
     {
@@ -42,6 +42,12 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, BntyExchangeRateCalcula
         hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
 
+    // withdraw the contract balance at the end of the sale
+    function withdraw() public onlyOwner {
+        require(currentTime() > SALE_END_DATE);
+
+        msg.sender.transfer(this.balance);
+    }
 
     // All contributions come through the fallback function
     function () payable public whenNotPaused {
