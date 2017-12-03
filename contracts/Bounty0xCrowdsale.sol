@@ -1,67 +1,50 @@
 pragma solidity ^0.4.18;
 
 import 'minimetoken/contracts/TokenController.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import 'zeppelin-solidity/contracts/token/TokenVesting.sol';
 
 import './Bounty0xToken.sol';
+import './BntyExchangeRateCalculator.sol';
+import './KnowsConstants.sol';
+import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
+import './Bounty0xReserveHolder.sol';
 
-contract Bounty0xCrowdsale is Pausable, TokenController {
-    using SafeMath for uint256;
+contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownable, AddressWhitelist, Pausable, TokenController {
+    using SafeMath for uint;
 
+    // Crowdsale contracts
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
     Bounty0xPresaleDistributor public presaleDistributor;               // contract that manages distributing presale awards
+    Bounty0xReserveHolder public bounty0xReserveHolder;               // contract that manages distributing presale awards
 
+    // Special addresses
     address public founder1;                                            // Wallet of founder 1
     address public founder2;                                            // Wallet of founder 2
     address public founder3;                                            // Wallet of founder 3
-    address public bounty0xWallet;                                      // Bounty0x Wallet multig wallet for contributions
+    address public bounty0xWallet;                                      // Bounty0x Wallet
     address[] public advisers;                                          // 4 Wallets of advisers
-    mapping (address => bool) public whitelistContributors;
+    bool vestedTokensDistributed;
 
-    // Crowdsale Conditions
-    mapping (address => uint256) public contributors;
-    uint256 public constant MAXIMUM_TOKEN_SUPPLY = 500000000;           // maximum BNTY tokens to be minted at any given point
-    uint256 public constant HARD_CAP_AMOUNT = 3260000000000000000000;   // in wei
-    uint256 public constant MAINSALE_FIX_RATE = 34657312692978;         // in wei
-    uint256 public constant MAX_GAS_PRICE = 30 * (10 ** 9);             // 30 gwei (in wei)
+    // Contribution amounts
+    mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
+    uint public totalContributions;                                  // Total contributions given
 
-    uint256 public constant SALE_START_DATE = 1513350000;               // in unix timestamp Dec 15th @ 15:00 CET
-    uint256 public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours;  // End whitelist 24 hours after sale start date/time
-    uint256 public constant SALE_END_DATE = SALE_START_DATE + 4 weeks;  // end sale in four weeks
-    uint256 public constant UNFREEZE_DATE = SALE_START_DATE + 76 weeks; // Bounty0x Reserve locked for 18 months
-
-    uint256 public constant PRESALE_POOL = 18950000;                    // 18.95M BNTY Pre-Sale Pool
-    uint256 public constant MAINSALE_POOL = 90900000;                   // 90.9M BNTY for Main-Sale Pool
-    uint256 public constant FOUNDER1_STAKE = 60000000;                  // 60M BNTY
-    uint256 public constant FOUNDER2_STAKE = 45000000;                  // 45M BNTY
-    uint256 public constant FOUNDER3_STAKE = 45000000;                  // 45M BNTY
-    uint256 public constant BOUNTY0X_RESERVE= 225150000;                // 225.15M BNTY Bounty0x Reserve Pool
-    uint256 public constant ADVISERS_POOL = 15000000;                   // 15M BNTY Advisers Pool
-    uint256 public totalContributed;                                    // Total amount of ETH contributed in given period
-
-    bool public tokenTransfersEnabled = false;                          // Transfer of tokens disabled till post-ICO
-    bool public hardCapReached = false;                                 // If hard cap was reached
-
-    uint256 private mainsaleTokensLeft = MAINSALE_POOL;                 // Used to check main sale tokens allocation pool is not exceeded
-
-    // Vesting conditions
-    uint public constant TEAM_VESTING_CLIFF = 0 weeks;                  // 0 week vesting cliff for founders and advisers
-    uint public constant TEAM_VESTING_PERIOD = 52 weeks;                // 1 year vesting period for founders and advisers
-
-    uint public constant ADVISERS_VESTING_CLIFF = 0 weeks;              // 0 week cliff for ADVISERS
-    uint public constant ADVISERS_VESTING_PERIOD = 24 weeks;            // 6 months vesting cliff for ADVISERS
-
-    mapping(address => TokenVesting) vestingContracts;
+    // Constants derived from the USD price of ether
+    uint public maxPresaleContributionsWei;
+    uint public maxPublicSaleContributionsWei;
+    uint public hardCapWei;
 
     // Events
-    event OnCompensated(address contributor, uint amount);
-    event OnContribution(uint totalContributed, address indexed contributor, uint amount, uint contributorsCount);
-    event OnHardCapReached(uint endTime);
+    event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
 
-    function Bounty0xCrowdsale(address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers) public {
+    function Bounty0xCrowdsale(uint fixedUSDEtherPrice, address _founder1, address _founder2, address _founder3, address _bounty0xWallet, address[] _advisers)
+        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice)
+        public
+    {
         require(_advisers.length == 4);
 
         advisers = _advisers;
@@ -69,41 +52,51 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
         founder2 = _founder2;
         founder3 = _founder3;
         bounty0xWallet = _bounty0xWallet;
+
+        maxPresaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST);
+        maxPublicSaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST);
+        hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
 
+
+    // All contributions come through the fallback function
     function () payable public whenNotPaused {
+        // require that they haven't sent too much gas
         require(tx.gasprice <= MAX_GAS_PRICE);
 
-        // make sure tokens left is more than zero
-        require(mainsaleTokensLeft >= 0);
+        // require the sale has started
+        require(now >= SALE_START_DATE);
 
-        uint256 contributionAmount = msg.value;
-        require(contributionAmount > 0);
-        
-        if (now < WHITELIST_END_DATE) {
-            require(whitelistContributors[msg.sender]);
+        // require that the sale has not ended
+        require(now < SALE_END_DATE);
+
+        bool isDuringPresale = now < WHITELIST_END_DATE;
+
+        // if we are in the presale, we need to make sure the sender is on the whitelist
+        if (isDuringPresale) {
+            require(isWhitelisted(msg.sender));
+            // also they must adhere to the maximum of $1.5k
+            require(contributionAmounts[msg.sender].add(msg.value) < maxPresaleContributionsWei);
+        } else {
+            // otherwise they adhere to the public maximum of $10k
+            require(contributionAmounts[msg.sender].add(msg.value) < maxPublicSaleContributionsWei);
         }
 
-        require(contributors[msg.sender].add(contributionAmount) <= getContributionCap()); // Checking total balance of contributor does not exceed cap
+        // require we are not at the cap
+        require(totalContributions.add(msg.value) < hardCapWei);
 
-        // calculate token amount to be minted and sent back to contributor
-        uint256 numTokens = contributionAmount.div(MAINSALE_FIX_RATE);
+        // account contribution towards total
+        totalContributions = totalContributions.add(msg.value);
 
-        // Update tokens left in main sale pool
-        mainsaleTokensLeft = mainsaleTokensLeft.sub(numTokens);
+        // account contribution towards address total
+        contributionAmounts[msg.sender] = contributionAmounts[msg.sender].add(msg.value);
 
-        // update funding state
-        totalContributed = totalContributed.add(contributionAmount);
+        // and send them some bnty
+        uint amountBntyRewarded = weiToBnty(msg.value);
+        bounty0xToken.transfer(msg.sender, amountBntyRewarded);
 
-        // Track balance of each contributor for check against per cap
-        contributors[msg.sender].push(contributionAmount);
-
-        // make sure total is not more than HARD_CAP
-        require(totalContributed <= HARD_CAP_AMOUNT);
-
-        // Transfer token to contributors address
-        bounty0xToken.transfer(msg.sender, numTokens);
-        OnCompensated(msg.sender, numTokens);
+        // log the contribution
+        OnContribution(msg.sender, isDuringPresale, msg.value, amountBntyRewarded);
     }
 
     //  @notice Sets Bounty0xToken contract
@@ -122,74 +115,87 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
             .add(FOUNDER2_STAKE)
             .add(FOUNDER3_STAKE)
             .add(BOUNTY0X_RESERVE)
-            .add(ADVISERS_POOL);
+            .add(ADVISERS_POOL)
+            .mul(10 ** 18);
 
         // generate all the tokens that will need to be distributed
         require(bounty0xToken.generateTokens(this, totalSupply));
 
-        // double check the supply is as expected, the maximum token supply of 500M
-        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY);
+        // check that this contract has control of the total supply
+        assert(bounty0xToken.totalSupply() == bounty0xToken.balanceOf(this));
+
+        // check that the total supply is 500M
+        assert(bounty0xToken.totalSupply() == MAXIMUM_TOKEN_SUPPLY.mul(10 ** 18));
     }
 
-    // create the contract responsible for distributing presale bounties based on the presale contract
-    function createBounty0xPresaleDistributor(Bounty0xPresaleI bounty0xPresale) public onlyOwner returns (bool success) {
+    // Create the contract responsible for distributing presale bounties based on the presale contract
+    function setBounty0xPresaleDistributor(Bounty0xPresaleDistributor _presaleDistributor) public onlyOwner returns (bool success) {
         require(presaleDistributor == address(0));
+        require(_presaleDistributor != address(0));
         require(bounty0xToken != address(0));
 
-        // create a presale distributor contract
-        presaleDistributor = new Bounty0xPresaleDistributor(bounty0xToken, bounty0xPresale);
+        // assign the presaleDistributor contract address
+        presaleDistributor = _presaleDistributor;
 
-        // fund the presale distributor
+        // assert the presale distributor contract has no balance yet
+        assert(bounty0xToken.balanceOf(presaleDistributor) == 0);
+
+        // fund the presale distributor contract
         bounty0xToken.transfer(presaleDistributor, PRESALE_POOL.mul(10 ** 18));
 
+        // assert the presale distributor contract has the presale pool in its balance
+        assert(bounty0xToken.balanceOf(presaleDistributor) == PRESALE_POOL.mul(10 ** 18));
+
         return true;
     }
 
-    // create the vesting contracts for the advisers
-    function distributeAdviserTokens() public onlyOwner returns (bool success) {
-        uint distributionAmount = ADVISERS_POOL.mul(10 ** 18).div(advisers.length);
+    // This function call creates all the the vesting contracts and gives them the appropriate amounts of BNTY
+    function distributeVestedTokens() public onlyOwner returns (bool success) {
+        require(!vestedTokensDistributed);
+
+        // founder 1
+        createFounderTokenVestingContract(founder1, FOUNDER1_STAKE);
+        createFounderTokenVestingContract(founder2, FOUNDER2_STAKE);
+        createFounderTokenVestingContract(founder3, FOUNDER3_STAKE);
+
+        // adviser distribution amounts
+        uint adviserDistributionAmount = ADVISERS_POOL.mul(10 ** 18).div(advisers.length);
 
         for (uint i = 0; i < advisers.length; i++) {
-            require(vestingContracts[advisers[i]] == address(0));
-
-            TokenVesting vesting = new TokenVesting(advisers[i], SALE_START_DATE, SALE_START_DATE + ADVISERS_VESTING_CLIFF, ADVISERS_VESTING_PERIOD, false);
-            bounty0xToken.transfer(address(vesting), distributionAmount);
-
-            vestingContracts[advisers[i]] = vesting;
+            TokenVesting vesting = new TokenVesting(advisers[i], SALE_START_DATE, ADVISERS_VESTING_CLIFF, ADVISERS_VESTING_PERIOD, false);
+            bounty0xToken.transfer(vesting, adviserDistributionAmount);
         }
 
+        vestedTokensDistributed = true;
         return true;
     }
 
-    // create the vesting contracts for the founder tokens
-    function distributeFounderTokens() public onlyOwner returns (bool success) {
-        require(vestingContracts[founder1] == address(0));
-        require(vestingContracts[founder2] == address(0));
-        require(vestingContracts[founder3] == address(0));
-
-        TokenVesting vestingFounder1 = new TokenVesting(founder1, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder1), FOUNDER1_STAKE.mul(10 ** 18));
-        vestingContracts[founder1] = vestingFounder1;
-
-        TokenVesting vestingFounder2 = new TokenVesting(founder2, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder2), FOUNDER2_STAKE.mul(10 ** 18));
-        vestingContracts[founder2] = vestingFounder2;
-
-        TokenVesting vestingFounder3 = new TokenVesting(founder3, SALE_START_DATE, SALE_START_DATE + TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(address(vestingFounder3), FOUNDER3_STAKE.mul(10 ** 18));
-        vestingContracts[founder3] = vestingFounder3;
-
-        return true;
+    // create the founder token vesting contract for a team member
+    function createFounderTokenVestingContract(address founder, uint stake) private returns (address) {
+        TokenVesting vesting = new TokenVesting(founder, SALE_START_DATE, TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
+        bounty0xToken.transfer(founder, stake.mul(10 ** 18));
+        return vesting;
     }
 
-    function getContributionCap() internal returns (uint256) {
-        if (now < WHITELIST_END_DATE) {
-            return 3160000000000000000;
-        } else {
-            return 21000000000000000000;
-        }
+    // This function call distributes the reserve tokens
+    function setBounty0xReserveHolder(Bounty0xReserveHolder _bounty0xReserveHolder) public onlyOwner returns (bool success) {
+        require(bounty0xReserveHolder == address(0));
+        require(_bounty0xReserveHolder != address(0));
+        require(bounty0xToken != address(0));
+
+        bounty0xReserveHolder = _bounty0xReserveHolder;
+
+        // check the balance is 0
+        assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == 0);
+
+        // send it the reserve pool
+        bounty0xToken.transfer(bounty0xReserveHolder, BOUNTY0X_RESERVE.mul(10 ** 18));
+
+        // assert the balance was transferred
+        assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == BOUNTY0X_RESERVE.mul(10 ** 18));
     }
-    
+
+
     /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens
     /// @return True if the ether is accepted, false if it throws
@@ -204,7 +210,7 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     /// @param _amount The amount of the transfer
     /// @return False if the controller does not authorize the transfer
     function onTransfer(address _from, address _to, uint _amount) public returns (bool) {
-        return canTransfer(_from);
+        return canSend(_from);
     }
 
     /// @notice Notifies the controller about an approval allowing the
@@ -214,16 +220,10 @@ contract Bounty0xCrowdsale is Pausable, TokenController {
     /// @param _amount The amount in the `approve()` call
     /// @return False if the controller does not authorize the approval
     function onApprove(address _owner, address _spender, uint _amount) public returns (bool) {
-        return canTransfer(_owner);
+        return canSend(_owner);
     }
 
-    function canTransfer(address sender) private view returns (bool) {
-        if (tokenTransfersEnabled) {
-            return true;
-        }
-
-        // until token transfers are enabled, only this crowdsale contract and the presale distributor may transfer
-        // tokens
+    function canSend(address sender) private view returns (bool) {
         return sender == address(this) || sender == address(presaleDistributor);
     }
 
