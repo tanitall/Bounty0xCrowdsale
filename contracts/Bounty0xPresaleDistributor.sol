@@ -44,16 +44,16 @@ contract Bounty0xPresaleDistributor is KnowsConstants, Ownable, BntyExchangeRate
             // they contributed and haven't been paid
             if (weiContributed > 0 && tokensPaid[investorAddress] == 0) {
                 // convert the amount of wei they contributed to the bnty
-                uint owedBntyTokens = weiToBnty(weiContributed);
+                uint bntyCompensation = Math.min256(weiToBnty(weiContributed), bounty0xToken.balanceOf(this));
 
                 // mark them paid first
-                tokensPaid[investorAddress] = owedBntyTokens;
+                tokensPaid[investorAddress] = bntyCompensation;
 
                 // transfer tokens to presale contributor address
-                bounty0xToken.transfer(investorAddress, owedBntyTokens);
+                require(bounty0xToken.transfer(investorAddress, bntyCompensation));
 
                 // log the event
-                OnPreSaleBuyerCompensated(investorAddress, owedBntyTokens);
+                OnPreSaleBuyerCompensated(investorAddress, bntyCompensation);
             }
         }
     }
