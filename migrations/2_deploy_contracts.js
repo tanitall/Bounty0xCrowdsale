@@ -3,6 +3,7 @@ const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const Bounty0xPresaleDistributor = artifacts.require('Bounty0xPresaleDistributor');
 const Bounty0xReserveHolder = artifacts.require('Bounty0xReserveHolder');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
+const CrowdsaleTokenController = artifacts.require('CrowdsaleTokenController');
 
 //////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
 const FOUNDER_1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
@@ -35,6 +36,9 @@ module.exports = function (deployer, network, accounts) {
       // deploy the bounty0x token
       const bounty0xToken = await deploy(Bounty0xToken, miniMeTokenFactory.address);
 
+      // deploy the token controller for the crowdsale
+      const crowdsaleTokenController = await deploy(CrowdsaleTokenController, bounty0xToken.address);
+
       // deploy the presale distributor contract
       const bounty0xPresaleDistributor = await deploy(Bounty0xPresaleDistributor, bounty0xToken.address, PRESALE_CONTRACT_ADDRESS);
 
@@ -42,22 +46,21 @@ module.exports = function (deployer, network, accounts) {
       const bounty0xReserveHolder = await deploy(Bounty0xReserveHolder, bounty0xToken.address, BOUNTY0X_WALLET);
 
       // deploy the crowdsale contract with its constants
-      const bounty0xCrowdsale = await deploy(Bounty0xCrowdsale, FIXED_CROWDSALE_USD_ETHER_PRICE, FOUNDER_1, FOUNDER_2, FOUNDER_3, BOUNTY0X_WALLET, ADVISERS, { gas: 6000000 });
+      const bounty0xCrowdsale = await deploy(
+        Bounty0xCrowdsale,
+        bounty0xToken.address,
+        FIXED_CROWDSALE_USD_ETHER_PRICE,
+        { gas: 6000000 }
+      );
 
       // transfer the bounty0x token ownership to the crowdsale contract
-      const setControllerTx = await bounty0xToken.changeController(bounty0xCrowdsale.address);
+      const setControllerTx = await bounty0xToken.changeController(crowdsaleTokenController.address);
 
-      // notify the bounty0x token to do its token setup
-      const setBounty0xTokenTx = await bounty0xCrowdsale.setBounty0xToken(bounty0xToken.address);
-
-      // set the presale distributor contract
-      const setPresaleDistributorTx = await bounty0xCrowdsale.setBounty0xPresaleDistributor(bounty0xPresaleDistributor.address);
-
-      // distribute the vested tokens to the team
-      const distributeVestedTokensTx = await bounty0xCrowdsale.distributeVestedTokens();
-
-      // distribute the reserve tokens to the reserve contract
-      const setReserveHolderTx = await bounty0xCrowdsale.setBounty0xReserveHolder(bounty0xReserveHolder.address);
+      // whitelist the distributors to be able to sent bounty0x
+      const whitelistDistributorContractsTx = await crowdsaleTokenController.addToWhitelist([
+        bounty0xCrowdsale.address,
+        bounty0xPresaleDistributor.address
+      ]);
     }
   );
 };

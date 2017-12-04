@@ -13,10 +13,12 @@ contract KnowsConstants {
     uint public constant MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST = 1500; // in USD the maximum contribution amount during the whitelist period
     uint public constant MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST = 10000;  // in USD the maximum contribution amount after the whitelist period ends
     uint public constant MAX_GAS_PRICE = 30 * (10 ** 9);                          // Max gas price of 30 gwei
+    uint public constant MAX_GAS = 200000;                                        // Max gas that can be sent with tx
 
     // Time constants
     uint public constant SALE_START_DATE = 1513346400;                    // in unix timestamp Dec 15th @ 15:00 CET
     uint public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours; // End whitelist 24 hours after sale start date/time
+    uint public constant LIMITS_END_DATE = SALE_START_DATE + 48 hours;    // End all limits 24 hours after the whitelist end date
     uint public constant SALE_END_DATE = SALE_START_DATE + 4 weeks;       // end sale in four weeks
     uint public constant UNFREEZE_DATE = SALE_START_DATE + 76 weeks;      // Bounty0x Reserve locked for 18 months
 

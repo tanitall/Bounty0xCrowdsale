@@ -1,17 +1,17 @@
 import { ZERO_ADDRESS } from './helpers/util';
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');
-const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
+const CrowdsaleTokenController = artifacts.require('CrowdsaleTokenController');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 
 contract('Bounty0xToken', (accounts) => {
   let token;
-  let crowdsale;
+  let crowdsaleTokenController;
   let factory;
 
   before('get the deployed bounty0x token', async () => {
     token = await Bounty0xToken.deployed();
-    crowdsale = await Bounty0xCrowdsale.deployed();
+    crowdsaleTokenController = await CrowdsaleTokenController.deployed();
     factory = await MiniMeTokenFactory.deployed();
   });
 
@@ -19,9 +19,9 @@ contract('Bounty0xToken', (accounts) => {
     assert.strictEqual(typeof token.address, 'string');
   });
 
-  it('controller should be Bounty0xCrowdsale', async () => {
+  it('controller should be CrowdsaleTokenController', async () => {
     const controller = await token.controller();
-    assert.strictEqual(controller, crowdsale.address);
+    assert.strictEqual(controller, crowdsaleTokenController.address);
   });
 
   it('should have a token factory', async () => {

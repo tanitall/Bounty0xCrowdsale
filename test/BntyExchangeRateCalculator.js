@@ -40,7 +40,7 @@ contract('BntyExchangeRateCalculator', function (accounts) {
       describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: $${bntyMicrodollarPrice * Math.pow(10, -6)}`, async () => {
         let calculator;
         before(async () => {
-          calculator = await BntyExchangeRateCalculator.new(bntyMicrodollarPrice, ethPriceUSD);
+          calculator = await BntyExchangeRateCalculator.new(bntyMicrodollarPrice, ethPriceUSD, 0);
         });
 
         it(
