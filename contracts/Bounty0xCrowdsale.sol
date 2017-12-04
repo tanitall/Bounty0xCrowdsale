@@ -93,7 +93,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
 
         // and send them some bnty
         uint amountBntyRewarded = weiToBnty(msg.value);
-        bounty0xToken.transfer(msg.sender, amountBntyRewarded);
+        require(bounty0xToken.transfer(msg.sender, amountBntyRewarded));
 
         // log the contribution
         OnContribution(msg.sender, isDuringPresale, msg.value, amountBntyRewarded);
@@ -141,7 +141,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
         assert(bounty0xToken.balanceOf(presaleDistributor) == 0);
 
         // fund the presale distributor contract
-        bounty0xToken.transfer(presaleDistributor, PRESALE_POOL.mul(10 ** 18));
+        require(bounty0xToken.transfer(presaleDistributor, PRESALE_POOL.mul(10 ** 18)));
 
         // assert the presale distributor contract has the presale pool in its balance
         assert(bounty0xToken.balanceOf(presaleDistributor) == PRESALE_POOL.mul(10 ** 18));
@@ -163,7 +163,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
 
         for (uint i = 0; i < advisers.length; i++) {
             TokenVesting vesting = new TokenVesting(advisers[i], SALE_START_DATE, ADVISERS_VESTING_CLIFF, ADVISERS_VESTING_PERIOD, false);
-            bounty0xToken.transfer(vesting, adviserDistributionAmount);
+            require(bounty0xToken.transfer(vesting, adviserDistributionAmount));
         }
 
         vestedTokensDistributed = true;
@@ -173,7 +173,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
     // create the founder token vesting contract for a team member
     function createFounderTokenVestingContract(address founder, uint stake) private returns (address) {
         TokenVesting vesting = new TokenVesting(founder, SALE_START_DATE, TEAM_VESTING_CLIFF, TEAM_VESTING_PERIOD, false);
-        bounty0xToken.transfer(founder, stake.mul(10 ** 18));
+        require(bounty0xToken.transfer(founder, stake.mul(10 ** 18)));
         return vesting;
     }
 
@@ -189,7 +189,7 @@ contract Bounty0xCrowdsale is KnowsConstants, BntyExchangeRateCalculator, Ownabl
         assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == 0);
 
         // send it the reserve pool
-        bounty0xToken.transfer(bounty0xReserveHolder, BOUNTY0X_RESERVE.mul(10 ** 18));
+        require(bounty0xToken.transfer(bounty0xReserveHolder, BOUNTY0X_RESERVE.mul(10 ** 18)));
 
         // assert the balance was transferred
         assert(bounty0xToken.balanceOf(bounty0xReserveHolder) == BOUNTY0X_RESERVE.mul(10 ** 18));

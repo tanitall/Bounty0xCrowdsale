@@ -28,10 +28,10 @@ contract('Bounty0xPresaleDistributor', function ([ deployer, contributor1, contr
         { from: deployer }
       );
 
-      // give it 1 million tokens (smaller for testing)
-      await token.generateTokens(presaleContract.address, Math.pow(10, 24), { from: deployer });
-
       distributor = await Bounty0xPresaleDistributor.new(token.address, presaleContract.address);
+
+      // give it 1 million tokens (smaller for testing)
+      await token.generateTokens(distributor.address, Math.pow(10, 24), { from: deployer });
     });
 
     it('can only be called by the owner', async () => {
@@ -53,7 +53,14 @@ contract('Bounty0xPresaleDistributor', function ([ deployer, contributor1, contr
       assert.strictEqual(logs[ 0 ].args.contributor, contributor1);
 
       // contributor1 sent 1 eth and should get eth price/usd per bnty bntys (each with 18 decimals)
-      withinPercentage(logs[ 0 ].args.numTokens, (355 / 0.0132) * Math.pow(10, 18));
+      const EXPECTED_PAYOUT = (355 / 0.0132) * Math.pow(10, 18);
+
+      // check the log is correct
+      withinPercentage(logs[ 0 ].args.numTokens, EXPECTED_PAYOUT);
+
+      // make sure they were actually paid
+      const tokenBalance = await token.balanceOf(contributor1);
+      withinPercentage(tokenBalance, EXPECTED_PAYOUT);
 
       // does not pay out any investor twice
       const { logs: secondTime } = await distributor.compensatePreSaleInvestors([ contributor1 ], { from: deployer });
