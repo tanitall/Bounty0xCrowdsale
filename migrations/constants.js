@@ -1,7 +1,5 @@
 //////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
 
-export const SALE_START_DATE = 1513346400; // in unix timestamp Dec 15th @ 15:00 CET
-
 export const TEAM_MEMBERS = [
   // FOUNDERS (total 150M)
   {
