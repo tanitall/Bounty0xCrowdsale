@@ -4,6 +4,7 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 // A simple contract that stores a whitelist of addresses, which the owner may update
 contract AddressWhitelist is Ownable {
+    // the addresses that are included in the whitelist
     mapping (address => bool) public whitelisted;
 
     function AddressWhitelist() public {
