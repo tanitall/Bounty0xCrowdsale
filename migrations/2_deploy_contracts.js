@@ -36,7 +36,7 @@ module.exports = function (deployer, network, accounts) {
       // deploy the reserve holder contract
       const bounty0xReserveHolder = await deploy(Bounty0xReserveHolder, bounty0xToken.address, BOUNTY0X_WALLET);
       // fund it with the reserve tokens
-      const fundReserveHolderTx = await bounty0xToken.generateTokens(bounty0xPresaleDistributor.address, BOUNTY0X_RESERVE * Math.pow(10, 18));
+      const fundReserveHolderTx = await bounty0xToken.generateTokens(bounty0xReserveHolder.address, BOUNTY0X_RESERVE * Math.pow(10, 18));
 
       // deploy the token vesting contracts
       for (let teamMember of TEAM_MEMBERS) {
