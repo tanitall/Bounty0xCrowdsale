@@ -13,10 +13,6 @@ module.exports = function (deployer, network, accounts) {
   const deploy = (Contract, ...args) => deployer.deploy(Contract, ...args)
     .then(() => Contract.deployed());
 
-  async function printTotalSupply(bounty0xToken) {
-    const totalSupply = await bounty0xToken.totalSupply();
-    console.log('TOTAL SUPPLY: ' + totalSupply.toString());
-  }
 
   deployer.then(
     async () => {
@@ -26,23 +22,39 @@ module.exports = function (deployer, network, accounts) {
       // deploy the bounty0x token
       const bounty0xToken = await deploy(Bounty0xToken, miniMeTokenFactory.address);
 
+      // helper function to give bounty, has some checks around correct balances
+      const generateBNTY = async (contractInstance, amount) => {
+        const amtHas = await bounty0xToken.balanceOf(contractInstance.address);
+
+        if (amtHas.valueOf() !== '0') {
+          throw new Error('unexpected prior balance!');
+        } else {
+          await bounty0xToken.generateTokens(contractInstance.address, amount * Math.pow(10, 18));
+        }
+
+        const newBalance = await bounty0xToken.balanceOf(contractInstance.address);
+
+        if (newBalance.valueOf() !== amtHas.plus(String(amount * Math.pow(10, 18))).valueOf()) {
+          throw new Error(`unexpected new balance! ${newBalance}`);
+        }
+      };
 
       // deploy the presale distributor contract
       const bounty0xPresaleDistributor = await deploy(Bounty0xPresaleDistributor, bounty0xToken.address, PRESALE_CONTRACT_ADDRESS);
       // fund it with presale tokens
-      const fundPresaleDistributorTx = await bounty0xToken.generateTokens(bounty0xPresaleDistributor.address, PRESALE_POOL * Math.pow(10, 18));
+      await generateBNTY(bounty0xPresaleDistributor, PRESALE_POOL);
 
 
       // deploy the reserve holder contract
       const bounty0xReserveHolder = await deploy(Bounty0xReserveHolder, bounty0xToken.address, BOUNTY0X_WALLET);
       // fund it with the reserve tokens
-      const fundReserveHolderTx = await bounty0xToken.generateTokens(bounty0xReserveHolder.address, BOUNTY0X_RESERVE * Math.pow(10, 18));
+      await generateBNTY(bounty0xReserveHolder, BOUNTY0X_RESERVE);
 
       // deploy the token vesting contracts
       for (let teamMember of TEAM_MEMBERS) {
-        const { wallet, stake, stakeDuration } = teamMember;
+        const { wallet, stake, stakeDuration, name } = teamMember;
         const tokenVesting = await deploy(Bounty0xTokenVesting, wallet, stakeDuration);
-        const fundVestingTx = await bounty0xToken.generateTokens(stake * Math.pow(10, 18), tokenVesting.address);
+        await generateBNTY(tokenVesting, stake);
       }
 
       // deploy the crowdsale contract with its constants
@@ -52,7 +64,7 @@ module.exports = function (deployer, network, accounts) {
         FIXED_CROWDSALE_USD_ETHER_PRICE
       );
       // fund the crowdsale
-      const fundCrowdsaleTx = await bounty0xToken.generateTokens(MAINSALE_POOL * Math.pow(10, 18), bounty0xCrowdsale.address);
+      await generateBNTY(bounty0xCrowdsale, MAINSALE_POOL);
 
       // deploy the token controller
       const crowdsaleTokenController = await deploy(CrowdsaleTokenController, bounty0xToken.address);

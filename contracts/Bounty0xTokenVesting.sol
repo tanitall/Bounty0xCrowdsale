@@ -5,7 +5,7 @@ import './KnowsConstants.sol';
 
 contract Bounty0xTokenVesting is KnowsConstants, TokenVesting {
     function Bounty0xTokenVesting(address _beneficiary, uint durationWeeks)
-        TokenVesting(_beneficiary, SALE_START_DATE, 0, durationWeeks * 1 weeks, true)
+        TokenVesting(_beneficiary, SALE_END_DATE, 0, durationWeeks * 1 weeks, false)
         public
     {
     }

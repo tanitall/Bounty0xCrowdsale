@@ -29,6 +29,11 @@ contract('Bounty0xToken', (accounts) => {
     assert.strictEqual(minime, factory.address);
   });
 
+  it('should have a total supply of 500M', async () => {
+    const tokenSupply = await token.totalSupply();
+    assert.strictEqual(tokenSupply.valueOf(), '5e26');
+  });
+
   it('should have the constant attributes', async () => {
     //  0x0,                        // no parent token
     //  0,                          // no snapshot block number from parent
