@@ -1,5 +1,11 @@
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+export const ONE_HOUR_SECONDS = 60 * 60;
+export const ONE_DAY_SECONDS = ONE_HOUR_SECONDS * 24;
+
+export const formatTime = t => (new Date(t * 1000)).toISOString();
+
+
 export function withinPercentage(actual, expected, percentage = 0.1) {
   if (expected === 0) {
     if (actual.valueOf() === '0') {

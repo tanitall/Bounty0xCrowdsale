@@ -34,8 +34,7 @@ const TEST_CASES = [
 ];
 
 contract('BntyExchangeRateCalculator', function (accounts) {
-  _.each(
-    TEST_CASES,
+  TEST_CASES.forEach(
     ({ ethPriceUSD, bntyMicrodollarPrice, ethAmt }) => {
       describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: $${bntyMicrodollarPrice * Math.pow(10, -6)}`, async () => {
         let calculator;

@@ -2,20 +2,37 @@ pragma solidity ^0.4.18;
 
 import './KnowsConstants.sol';
 import './Bounty0xToken.sol';
-import 'zeppelin-solidity/contracts/token/ERC20Basic.sol';
-import 'zeppelin-solidity/contracts/token/TokenTimelock.sol';
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
+import './KnowsTime.sol';
 
-// Contract that holds the reserves
-// has additional function that allows the owner to add team members,
-// distributing some of the reserves to a vested token contract
-contract Bounty0xReserveHolder is TokenTimelock, KnowsConstants, Ownable {
-    function Bounty0xReserveHolder(ERC20Basic _bounty0xToken, address _beneficiary)
-        TokenTimelock(_bounty0xToken, _beneficiary, uint64(UNFREEZE_DATE))
-        public
-    {
+/**
+ * @title Bounty0xReserveHolder
+ * @dev Bounty0xReserveHolder is a token holder contract that will allow a
+ * beneficiary to extract the tokens after a given release time
+ */
+contract Bounty0xReserveHolder is KnowsConstants, KnowsTime {
+    // Bounty0xToken address
+    Bounty0xToken public token;
+
+    // beneficiary of tokens after they are released
+    address public beneficiary;
+
+    function Bounty0xReserveHolder(Bounty0xToken _token, address _beneficiary) public {
+        require(_token != address(0));
+        require(_beneficiary != address(0));
+
+        token = _token;
+        beneficiary = _beneficiary;
     }
 
-    function addTeamMember(address wallet) public onlyOwner {
+    /**
+     * @notice Transfers tokens held by timelock to beneficiary.
+     */
+    function release() public {
+        require(currentTime() >= UNFREEZE_DATE);
+
+        uint amount = token.balanceOf(this);
+        require(amount > 0);
+
+        require(token.transfer(beneficiary, amount));
     }
 }

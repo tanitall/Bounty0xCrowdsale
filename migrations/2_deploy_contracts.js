@@ -1,32 +1,18 @@
+const { BOUNTY0X_RESERVE, BOUNTY0X_WALLET, PRESALE_CONTRACT_ADDRESS, FIXED_CROWDSALE_USD_ETHER_PRICE, TEAM_MEMBERS, PRESALE_POOL, MAINSALE_POOL } = require('./constants');
+
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const Bounty0xPresaleDistributor = artifacts.require('Bounty0xPresaleDistributor');
 const Bounty0xReserveHolder = artifacts.require('Bounty0xReserveHolder');
 const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 const CrowdsaleTokenController = artifacts.require('CrowdsaleTokenController');
-
-//////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
-const FOUNDER_1 = '0x60d7df77bcc92a0e92c6d2b7b4d276ad0dd33e90';
-const FOUNDER_2 = '0xd32ea3da0044fc5c9554a43bbbb3899c0124a9b5';
-const FOUNDER_3 = '0xb2427291cb661a2ed72c1e66a9fe2faffbb67b2f';
-const BOUNTY0X_WALLET = '0xc9afbf88b36a5c4a0a8a41918552e24a5c3a1958';
-
-const ADVISERS = [
-  '0x35e3fa8f6bdb38af7b657866ef39ebe43d9875c2',
-  '0xd7383e030e7d277a000eb22fa3dede2ccacd9983',
-  '0xf40c533cd70624b361d02884c46840cfb2e4f40c',
-  '0x264dfc4f90a58ed2e5be3fb5378e511c468f198f'
-];
-
-const PRESALE_CONTRACT_ADDRESS = '0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea';
-
-const FIXED_CROWDSALE_USD_ETHER_PRICE = 450;
-//////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
+const Bounty0xTokenVesting = artifacts.require('Bounty0xTokenVesting');
 
 module.exports = function (deployer, network, accounts) {
-  // helper function that deploys a contract via deployer and returns the deployed instance
+  // Helper function that deploys a contract via deployer and returns the deployed instance
   const deploy = (Contract, ...args) => deployer.deploy(Contract, ...args)
     .then(() => Contract.deployed());
+
 
   deployer.then(
     async () => {
@@ -36,22 +22,53 @@ module.exports = function (deployer, network, accounts) {
       // deploy the bounty0x token
       const bounty0xToken = await deploy(Bounty0xToken, miniMeTokenFactory.address);
 
-      // deploy the token controller for the crowdsale
-      const crowdsaleTokenController = await deploy(CrowdsaleTokenController, bounty0xToken.address);
+      // helper function to give bounty, has some checks around correct balances
+      const generateBNTY = async (contractInstance, amount) => {
+        const amtHas = await bounty0xToken.balanceOf(contractInstance.address);
+
+        if (amtHas.valueOf() !== '0') {
+          throw new Error('unexpected prior balance!');
+        } else {
+          await bounty0xToken.generateTokens(contractInstance.address, amount * Math.pow(10, 18));
+        }
+
+        const newBalance = await bounty0xToken.balanceOf(contractInstance.address);
+
+        if (newBalance.valueOf() !== amtHas.plus(String(amount * Math.pow(10, 18))).valueOf()) {
+          throw new Error(`unexpected new balance! ${newBalance}`);
+        }
+      };
 
       // deploy the presale distributor contract
       const bounty0xPresaleDistributor = await deploy(Bounty0xPresaleDistributor, bounty0xToken.address, PRESALE_CONTRACT_ADDRESS);
+      // fund it with presale tokens
+      await generateBNTY(bounty0xPresaleDistributor, PRESALE_POOL);
+
 
       // deploy the reserve holder contract
       const bounty0xReserveHolder = await deploy(Bounty0xReserveHolder, bounty0xToken.address, BOUNTY0X_WALLET);
+      // fund it with the reserve tokens
+      await generateBNTY(bounty0xReserveHolder, BOUNTY0X_RESERVE);
+
+      // deploy the token vesting contracts
+      for (let teamMember of TEAM_MEMBERS) {
+        const { wallet, stake, stakeDuration, name } = teamMember;
+        const tokenVesting = await deploy(Bounty0xTokenVesting, wallet, stakeDuration);
+        await generateBNTY(tokenVesting, stake);
+      }
 
       // deploy the crowdsale contract with its constants
       const bounty0xCrowdsale = await deploy(
         Bounty0xCrowdsale,
         bounty0xToken.address,
-        FIXED_CROWDSALE_USD_ETHER_PRICE,
-        { gas: 6000000 }
+        FIXED_CROWDSALE_USD_ETHER_PRICE
       );
+      // fund the crowdsale
+      await generateBNTY(bounty0xCrowdsale, MAINSALE_POOL);
+
+      // deploy the token controller
+      const crowdsaleTokenController = await deploy(CrowdsaleTokenController, bounty0xToken.address);
+
 
       // transfer the bounty0x token ownership to the crowdsale contract
       const setControllerTx = await bounty0xToken.changeController(crowdsaleTokenController.address);
@@ -61,6 +78,7 @@ module.exports = function (deployer, network, accounts) {
         bounty0xCrowdsale.address,
         bounty0xPresaleDistributor.address
       ]);
+
     }
   );
 };
