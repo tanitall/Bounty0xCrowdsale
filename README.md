@@ -1,4 +1,5 @@
 # Bounty0xCrowdsale
+[![Build Status](https://travis-ci.org/bounty0x/Bounty0xCrowdsale.svg?branch=master)](https://travis-ci.org/bounty0x/Bounty0xCrowdsale)
 
 Crowdsale contract based on Zeppelin Contracts
 

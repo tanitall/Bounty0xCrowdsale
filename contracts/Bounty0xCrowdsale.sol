@@ -41,11 +41,9 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
 
-    // withdraw the contract balance at the end of the sale
-    function withdraw() public onlyOwner {
-        require(currentTime() > SALE_END_DATE);
-
-        msg.sender.transfer(this.balance);
+    // the crowdsale owner may withdraw any amount of ether from this contract at any time
+    function withdraw(uint amount) public onlyOwner {
+        msg.sender.transfer(amount);
     }
 
     // All contributions come through the fallback function
@@ -96,5 +94,4 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         // log the contribution
         OnContribution(msg.sender, isDuringPresale, msg.value, amountBntyRewarded);
     }
-
 }
