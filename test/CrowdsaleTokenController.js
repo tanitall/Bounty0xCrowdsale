@@ -35,4 +35,6 @@ contract('CrowdsaleTokenController', function (accounts) {
 
   it('only allows transfer from whitelisted addresses');
   it('only allows approval from whitelisted addresses');
+  it('allows the owner to change the token controller');
+  it('does not accept any payment to the token contract');
 });
