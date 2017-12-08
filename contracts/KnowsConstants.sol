@@ -9,9 +9,9 @@ contract KnowsConstants {
 
     // Contribution constants
     uint public constant MINIMUM_PARTICIPATION_AMOUNT_USD = 50;                   // in USD the minimum contribution per address
-    uint public constant HARD_CAP_AMOUNT_USD = 1500000;                           // in USD the maximum total collected amount
-    uint public constant MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST = 1500; // in USD the maximum contribution amount during the whitelist period
-    uint public constant MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST = 10000;  // in USD the maximum contribution amount after the whitelist period ends
+    uint public constant HARD_CAP_USD = 1500000;                           // in USD the maximum total collected amount
+    uint public constant MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD = 1500; // in USD the maximum contribution amount during the whitelist period
+    uint public constant MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD = 10000;  // in USD the maximum contribution amount after the whitelist period ends
     uint public constant MAX_GAS_PRICE = 30 * (10 ** 9);                          // Max gas price of 30 gwei
     uint public constant MAX_GAS = 200000;                                        // Max gas that can be sent with tx
 

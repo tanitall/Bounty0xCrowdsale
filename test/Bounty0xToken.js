@@ -29,9 +29,10 @@ contract('Bounty0xToken', (accounts) => {
     assert.strictEqual(minime, factory.address);
   });
 
-  it('should have a total supply of 500M', async () => {
+  it('should have a total supply of 500M +/- 1 BNTY', async () => {
     const tokenSupply = await token.totalSupply();
-    assert.strictEqual(tokenSupply.valueOf(), '5e26');
+    // not off by more than 1 BNTY === 0.0165 USD at crowdsale
+    assert.strictEqual(tokenSupply.sub('5e+26').abs() < Math.pow(10, 18), true);
   });
 
   it('should have the constant attributes', async () => {
