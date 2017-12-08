@@ -22,11 +22,6 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
     mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
     uint public totalContributions;                                  // Total contributions given
 
-    // Constants derived from the USD price of ether
-    uint public maxPresaleContributionsWei;
-    uint public maxPublicSaleContributionsWei;
-    uint public hardCapWei;
-
     // Events
     event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
 
@@ -35,11 +30,9 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         public
     {
         bounty0xToken = _bounty0xToken;
-
-        maxPresaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST);
-        maxPublicSaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST);
-        hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
+
+
 
     // the crowdsale owner may withdraw any amount of ether from this contract at any time
     function withdraw(uint amount) public onlyOwner {
@@ -51,6 +44,9 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         // get the current time
         uint time = currentTime();
 
+        // must be sent with some value
+        require(msg.value > 0);
+
         // require the sale has started
         require(time >= SALE_START_DATE);
 
@@ -58,27 +54,35 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         require(time < SALE_END_DATE);
 
         // require we are not at the cap
-        require(totalContributions.add(msg.value) <= hardCapWei);
+        require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_USD));
 
         bool isDuringPresale = time < WHITELIST_END_DATE;
 
-        // these limits are only checked for the first N hours
-        if (time < LIMITS_END_DATE) {
-            // require that they paid a high gas price
+        if (isDuringPresale) {
+            // if we are in the presale, the requirements are:
+            // - sender is whitelisted
+            require(isWhitelisted(msg.sender));
+
+            // - sender may not contribute more than 1.5k USD
+            require(
+            contributionAmounts[msg.sender].add(msg.value) <
+            usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD)
+            );
+        }
+        else if (time < LIMITS_END_DATE) {
+            // these limits are only checked until LIMITS_END_DATE
+
+            // require that they have not overpaid their gas price
             require(tx.gasprice <= MAX_GAS_PRICE);
 
             // require that they haven't sent too much gas
             require(msg.gas <= MAX_GAS);
 
-            // if we are in the presale, we need to make sure the sender is on the whitelist
-            if (isDuringPresale) {
-                require(isWhitelisted(msg.sender));
-                // also they must adhere to the maximum of $1.5k
-                require(contributionAmounts[msg.sender].add(msg.value) < maxPresaleContributionsWei);
-            } else {
-                // otherwise they adhere to the public maximum of $10k
-                require(contributionAmounts[msg.sender].add(msg.value) < maxPublicSaleContributionsWei);
-            }
+            // require that they adhere to the public maximum of $10k
+            require(
+            contributionAmounts[msg.sender].add(msg.value) <
+            usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD)
+            );
         }
 
         // account contribution towards total
@@ -87,7 +91,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         // account contribution towards address total
         contributionAmounts[msg.sender] = contributionAmounts[msg.sender].add(msg.value);
 
-        // and send them some bnty
+        // send contributor their BNTY
         uint amountBntyRewarded = weiToBnty(msg.value);
         require(bounty0xToken.transfer(msg.sender, amountBntyRewarded));
 
