@@ -12,11 +12,12 @@ import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
 import './Bounty0xReserveHolder.sol';
 
-contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRateCalculator, AddressWhitelist, Pausable {
+contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRateCalculator, Pausable {
     using SafeMath for uint;
 
     // Crowdsale contracts
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
+    Bounty0xPresaleI public bounty0xPresale;                                 // Reward tokens to compensate in
 
     // Contribution amounts
     mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
@@ -26,11 +27,12 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
     event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded);
     event OnWithdraw(address to, uint amount);
 
-    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice)
-    BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, _USDEtherPrice, SALE_START_DATE)
+    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice, Bounty0xPresaleI _bounty0xPresale)
+        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, _USDEtherPrice, SALE_START_DATE)
         public
     {
         bounty0xToken = _bounty0xToken;
+        bounty0xPresale = _bounty0xPresale;
     }
 
     // the crowdsale owner may withdraw any amount of ether from this contract at any time
@@ -66,9 +68,9 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
             // require that they haven't sent too much gas
             require(msg.gas <= MAX_GAS);
 
-            // if we are in the presale, we need to make sure the sender is on the whitelist
+            // if we are in the presale, we need to make sure the sender contributed to the presale
             if (isDuringWhitelistPeriod) {
-                require(isWhitelisted(msg.sender));
+                require(bounty0xPresale.balanceOf(msg.sender) > 0);
                 // also they must adhere to the maximum of $1.5k
                 require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD));
             } else {

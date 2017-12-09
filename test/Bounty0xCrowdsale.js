@@ -5,6 +5,7 @@ import expectThrow from './helpers/expectThrow';
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const MockBounty0xCrowdsale = artifacts.require('MockBounty0xCrowdsale');
+const MockBounty0xPresale = artifacts.require('MockBounty0xPresale');
 
 contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
   let deployedCrowdsale, deployedToken;
@@ -28,20 +29,23 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
   describe('MockBounty0xCrowdsale', () => {
     let token, crowdsale, saleStartDate, saleEndDate, whitelistEndDate, limitsEndDate, maxGasPrice, maxGas,
-      minContributionWei, hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod;
+      minContributionWei, hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod,
+      presale;
 
     // if 1 ether === 15 million USD, we can saturate the crowdsale with .1 ETH
     const USD_ETHER_PRICE = 15 * Math.pow(10, 6);
 
     beforeEach('deploy a fresh crowdsale', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
+      presale = await MockBounty0xPresale.new(
+        [ presaleContributor1, presaleContributor2 ],
+        [ Math.pow(10, 18), 3 * Math.pow(10, 18) ],
+        { from: deployer }
+      );
 
-      crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, { from: deployer });
+      crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, presale.address, { from: deployer });
 
       await token.generateTokens(crowdsale.address, MAINSALE_POOL * Math.pow(10, 18), { from: deployer });
-
-      // whitelist the presale contributors
-      await crowdsale.addToWhitelist([ presaleContributor1, presaleContributor2 ], { from: deployer });
 
       saleStartDate = await crowdsale.SALE_START_DATE();
       saleEndDate = await crowdsale.SALE_END_DATE();
