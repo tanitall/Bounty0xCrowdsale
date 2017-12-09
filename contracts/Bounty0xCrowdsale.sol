@@ -50,8 +50,8 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         // require that the sale has not ended
         require(time < SALE_END_DATE);
 
-        // max contribution is AT MOST the hard cap USD, will be adjusted below
-        uint maximumContribution = usdToWei(HARD_CAP_USD);
+        // maximum contribution from this transaction is tracked in this variable
+        uint maximumContribution = usdToWei(HARD_CAP_USD).sub(totalContributions);
 
         // store whether the contribution is made during the whitelist period
         bool isDuringWhitelistPeriod = time < WHITELIST_END_DATE;
@@ -69,25 +69,22 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
                 require(isWhitelisted(msg.sender));
 
                 // the maximum contribution is set for the whitelist period
-                maximumContribution = usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD);
+                maximumContribution = Math.min256(
+                    maximumContribution,
+                    usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD).sub(contributionAmounts[msg.sender])
+                );
             } else {
                 // the maximum contribution is set for the limited period
-                maximumContribution = usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD);
+                maximumContribution = Math.min256(
+                    maximumContribution,
+                    usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD).sub(contributionAmounts[msg.sender])
+                );
             }
         }
 
-        // the additional amount that this address may contribute
-        uint addressMaximumContribution = maximumContribution.sub(contributionAmounts[msg.sender]);
-
-        // how much to refund the sender
-        uint refundWei = 0;
-        uint contribution = msg.value;
-
-        // sent too much
-        if (msg.value > addressMaximumContribution) {
-            contribution = addressMaximumContribution;
-            refundWei = msg.value.sub(addressMaximumContribution);
-        }
+        // calculate how much contribution is accepted and how much is refunded
+        uint contribution = Math.min256(msg.value, maximumContribution);
+        uint refundWei = msg.value.sub(contribution);
 
         // require that they are allowed to contribute more
         require(contribution > 0);
