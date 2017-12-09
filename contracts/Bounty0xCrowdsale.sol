@@ -51,7 +51,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         require(time < SALE_END_DATE);
 
         // require we are not at the cap
-        require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_AMOUNT_USD));
+        require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_USD));
 
         // require that it's more than the minimum contribution amount
         require(msg.value >= usdToWei(MINIMUM_PARTICIPATION_AMOUNT_USD));
@@ -70,10 +70,10 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
             if (isDuringWhitelistPeriod) {
                 require(isWhitelisted(msg.sender));
                 // also they must adhere to the maximum of $1.5k
-                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST));
+                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD));
             } else {
                 // otherwise they adhere to the public maximum of $10k
-                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST));
+                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD));
             }
         }
 
