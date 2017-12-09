@@ -61,7 +61,6 @@ module.exports = function (deployer, network, accounts) {
       const bounty0xCrowdsale = await deploy(
         Bounty0xCrowdsale,
         bounty0xToken.address,
-        PRESALE_CONTRACT_ADDRESS,
         FIXED_CROWDSALE_USD_ETHER_PRICE
       );
       // fund the crowdsale

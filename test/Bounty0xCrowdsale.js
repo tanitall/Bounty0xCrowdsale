@@ -5,7 +5,6 @@ import expectThrow from './helpers/expectThrow';
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const MockBounty0xCrowdsale = artifacts.require('MockBounty0xCrowdsale');
-const MockBounty0xPresale = artifacts.require('MockBounty0xPresale');
 
 contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
   let deployedCrowdsale, deployedToken;
@@ -24,7 +23,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
     assert.strictEqual(knowsToken, deployedToken.address);
 
     const balance = await deployedToken.balanceOf(deployedCrowdsale.address);
-    assert.strictEqual(balance.valueOf(), '9.09e+25');
+    assert.strictEqual(balance.valueOf(), '9.091e+25');
   });
 
   describe('MockBounty0xCrowdsale', () => {
@@ -39,13 +38,10 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
     beforeEach('deploy a fresh crowdsale', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
-      presale = await MockBounty0xPresale.new(
-        [ presaleContributor1, presaleContributor2 ],
-        [ Math.pow(10, 18), 3 * Math.pow(10, 18) ],
-        { from: deployer }
-      );
 
-      crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, presale.address, { from: deployer });
+      crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, { from: deployer });
+
+      await crowdsale.addToWhitelist([ presaleContributor1, presaleContributor2 ], { from: deployer });
 
       await token.generateTokens(crowdsale.address, MAINSALE_POOL * Math.pow(10, 18), { from: deployer });
 
@@ -145,9 +141,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       await crowdsale.setTime(limitsEndDate);
 
       // contribute the hard cap in wei to put the crowdsale at the hard cap
-      await contribute(contributor1, hardCapWei / 2);
-
-      // todo: finish test
+      await contribute(contributor1, hardCapWei);
     });
 
     it('only accepts contributions greater than the minimum amount');

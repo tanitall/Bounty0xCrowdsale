@@ -94,7 +94,7 @@ export const FIXED_CROWDSALE_USD_ETHER_PRICE = 450;
 // Token constants, in BNTY (a BNTY has 18 decimals)
 export const MAXIMUM_TOKEN_SUPPLY = 500 * Math.pow(10, 6);                // maximum BNTY tokens to be minted at any given point
 export const PRESALE_POOL = 18.95 * Math.pow(10, 6);                         // 18.95M BNTY Pre-Sale Pool
-export const MAINSALE_POOL = 90.9 * Math.pow(10, 6);                        // 90.9M BNTY for Main-Sale Pool
-export const BOUNTY0X_RESERVE = 225.15 * Math.pow(10, 6);                    // 225.15M BNTY Bounty0x Reserve Pool
+export const MAINSALE_POOL = 90.91 * Math.pow(10, 6);                        // 90.91M BNTY for Main-Sale Pool
+export const BOUNTY0X_RESERVE = 225.14 * Math.pow(10, 6);                    // 225.14M BNTY Bounty0x Reserve Pool
 
 //////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////

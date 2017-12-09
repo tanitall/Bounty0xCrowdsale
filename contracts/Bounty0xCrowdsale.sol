@@ -3,6 +3,7 @@ pragma solidity ^0.4.18;
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import 'zeppelin-solidity/contracts/math/Math.sol';
 
 import './Bounty0xToken.sol';
 import './BntyExchangeRateCalculator.sol';
@@ -12,12 +13,11 @@ import './AddressWhitelist.sol';
 import './Bounty0xPresaleDistributor.sol';
 import './Bounty0xReserveHolder.sol';
 
-contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRateCalculator, Pausable {
+contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRateCalculator, AddressWhitelist, Pausable {
     using SafeMath for uint;
 
     // Crowdsale contracts
     Bounty0xToken public bounty0xToken;                                 // Reward tokens to compensate in
-    Bounty0xPresaleI public bounty0xPresale;                                 // Reward tokens to compensate in
 
     // Contribution amounts
     mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
@@ -27,12 +27,11 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
     event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded, uint refundedWei);
     event OnWithdraw(address to, uint amount);
 
-    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice, Bounty0xPresaleI _bounty0xPresale)
+    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice)
         BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, _USDEtherPrice, SALE_START_DATE)
         public
     {
         bounty0xToken = _bounty0xToken;
-        bounty0xPresale = _bounty0xPresale;
     }
 
     // the crowdsale owner may withdraw any amount of ether from this contract at any time
@@ -67,7 +66,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
 
             // if we are in the WHITELIST period, we need to make sure the sender contributed to the presale
             if (isDuringWhitelistPeriod) {
-                require(bounty0xPresale.balanceOf(msg.sender) > 0);
+                require(isWhitelisted(msg.sender));
 
                 // the maximum contribution is set for the whitelist period
                 maximumContribution = usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD);
@@ -100,7 +99,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         contributionAmounts[msg.sender] = contributionAmounts[msg.sender].add(contribution);
 
         // and send them some bnty
-        uint amountBntyRewarded = weiToBnty(contribution);
+        uint amountBntyRewarded = Math.min256(weiToBnty(contribution), bounty0xToken.balanceOf(this));
         require(bounty0xToken.transfer(msg.sender, amountBntyRewarded));
 
         if (refundWei > 0) {

@@ -21,7 +21,7 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
 
   it('should have a balance of 225.15M', async () => {
     const balance = await token.balanceOf(bounty0xReserveHolder.address);
-    assert.strictEqual(balance.valueOf(), '2.2515e+26');
+    assert.strictEqual(balance.valueOf(), '2.2514e+26');
   });
 
   describe('#release', () => {
