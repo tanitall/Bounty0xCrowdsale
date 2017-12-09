@@ -34,6 +34,8 @@ contract('Bounty0xCrowdsale', function ([ deployer, whitelistContributor1, white
 
     // if 1 ether === 15 million USD, we can saturate the crowdsale with .1 ETH
     const USD_ETHER_PRICE = 15 * Math.pow(10, 6);
+    const FIFTEEN_HUNDRED_IN_WEI = Math.floor(1500 / USD_ETHER_PRICE * Math.pow(10, 18));
+    const TEN_THOUSAND_IN_WEI = Math.floor(10000 / USD_ETHER_PRICE * Math.pow(10, 18));
 
     const ONE_GWEI = Math.pow(10, 9);
 
@@ -163,16 +165,26 @@ contract('Bounty0xCrowdsale', function ([ deployer, whitelistContributor1, white
     it('only accepts $1.5k USD per address during whitelist period', async () => {
       await crowdsale.setTime(whitelistEndDate - 1);
 
-      const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor1, maxContributionWeiWhitelist.mul(3));
+      {
+        const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor1, maxContributionWeiWhitelist.mul(3));
 
-      assert.strictEqual(contributedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
-      assert.strictEqual(refundedWei.valueOf(), maxContributionWeiWhitelist.mul(2).valueOf());
+        assert.strictEqual(contributedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
+        assert.strictEqual(refundedWei.valueOf(), maxContributionWeiWhitelist.mul(2).valueOf());
 
-      // may not contribute any more
-      await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
+        // may not contribute any more
+        await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
+      }
 
-      // the 2nd whitelisted contributor still can contribute
-      await contribute(whitelistContributor2, ONE_GWEI);
+      {
+        // the 2nd whitelisted contributor contributes the max
+        const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor2, FIFTEEN_HUNDRED_IN_WEI);
+
+        assert.strictEqual(contributedWei.sub(FIFTEEN_HUNDRED_IN_WEI).valueOf(), '0');
+        assert.strictEqual(refundedWei.valueOf(), '0');
+
+        // may not contribute any more
+        await expectThrow(contribute(whitelistContributor2, ONE_GWEI));
+      }
     });
 
     it('accepts contributions from any address after the whitelist period for 24 hours', async () => {
@@ -183,13 +195,92 @@ contract('Bounty0xCrowdsale', function ([ deployer, whitelistContributor1, white
       }
     });
 
-    it('limits gas price sent with contributions for 24 hours after whitelist period');
-    it('limits gas sent with contributions for 24 hours after whitelist period');
-    it('limits total contributions to $10k USD for 24 hours after whitelist period');
-    it('adds to total contributions for each wei sent');
-    it('records contributions by address correctly');
-    it('rewards the correct amount of BNTY for contributions');
-    it('refunds amounts in excess of the allowed amount for an address');
+    it('limits gas and gas price sent until limits end date', async () => {
+      await crowdsale.setTime(saleStartDate);
 
+      // can contribute at or below max gas price
+      await contribute(whitelistContributor1, ONE_GWEI, maxGas - 1, maxGasPrice - 1);
+      await contribute(whitelistContributor1, ONE_GWEI, maxGas, maxGasPrice);
+
+      // cannot contribute at more than gas price
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI, maxGas + 1, maxGasPrice));
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI, maxGas, maxGasPrice + 1));
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI, maxGas + 1, maxGasPrice + 1));
+
+      // can still contribute
+      await contribute(whitelistContributor1, ONE_GWEI);
+
+      // check after whitelist period
+      await crowdsale.setTime(whitelistEndDate);
+
+      // can contribute at or below max gas price
+      await contribute(contributor1, ONE_GWEI, maxGas - 1, maxGasPrice - 1);
+      await contribute(contributor1, ONE_GWEI, maxGas, maxGasPrice);
+
+      // cannot contribute at more than gas price
+      await expectThrow(contribute(contributor1, ONE_GWEI, maxGas + 1, maxGasPrice));
+      await expectThrow(contribute(contributor1, ONE_GWEI, maxGas, maxGasPrice + 1));
+      await expectThrow(contribute(contributor1, ONE_GWEI, maxGas + 1, maxGasPrice + 1));
+
+      // can still contribute
+      await contribute(contributor1, ONE_GWEI);
+
+      await crowdsale.setTime(limitsEndDate);
+
+      // maximums removed
+      await contribute(contributor1, ONE_GWEI, maxGas + 1, maxGasPrice + 1);
+    });
+
+    it('limits total contributions to $10k USD for 24 hours after whitelist period', async () => {
+      await crowdsale.setTime(whitelistEndDate);
+
+      {
+        const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor1, maxContributionWeiWhitelist);
+
+        assert.strictEqual(contributedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
+        assert.strictEqual(refundedWei.valueOf(), '0');
+
+        {
+          // contributes max during limited period, should get the whitelist amount back
+          const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor1, maxContributionWeiLimitedPeriod);
+
+          assert.strictEqual(contributedWei.valueOf(), maxContributionWeiLimitedPeriod.sub(maxContributionWeiWhitelist)
+            .valueOf());
+          assert.strictEqual(refundedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
+        }
+
+        // now at the max
+        await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
+      }
+    });
+
+    it('adds to total contributions for each wei sent', async () => {
+      await crowdsale.setTime(saleStartDate);
+
+      await contribute(whitelistContributor1, ONE_GWEI);
+      let total = await crowdsale.totalContributions();
+      assert.strictEqual(total.sub(ONE_GWEI).valueOf(), '0');
+
+      await contribute(whitelistContributor1, ONE_GWEI * 2);
+      total = await crowdsale.totalContributions();
+      assert.strictEqual(total.sub(ONE_GWEI * 3).valueOf(), '0');
+    });
+
+    it('records contributions by address correctly', async () => {
+      await crowdsale.setTime(saleStartDate);
+
+      await contribute(whitelistContributor1, ONE_GWEI);
+      let wl1Contributions = await crowdsale.contributionAmounts(whitelistContributor1);
+      assert.strictEqual(wl1Contributions.sub(ONE_GWEI).valueOf(), '0');
+
+      await contribute(whitelistContributor1, ONE_GWEI * 5);
+      wl1Contributions = await crowdsale.contributionAmounts(whitelistContributor1);
+      assert.strictEqual(wl1Contributions.sub(ONE_GWEI * 6).valueOf(), '0');
+
+      // another contributor
+      await contribute(whitelistContributor2, ONE_GWEI * 2);
+      const wl2Contributions = await crowdsale.contributionAmounts(whitelistContributor2);
+      assert.strictEqual(wl2Contributions.sub(ONE_GWEI * 2).valueOf(), '0');
+    });
   });
 });
