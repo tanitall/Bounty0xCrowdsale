@@ -19,7 +19,7 @@ contract KnowsConstants {
     uint public constant WHITELIST_END_DATE = SALE_START_DATE + 24 hours; // End whitelist 24 hours after sale start date/time
     uint public constant LIMITS_END_DATE = SALE_START_DATE + 48 hours;    // End all limits 48 hours after the sale start date
     uint public constant SALE_END_DATE = SALE_START_DATE + 4 weeks;       // end sale in four weeks
-    uint public constant VESTING_START_DATE = 1513771200;
+    uint public constant VESTING_START_DATE = 1513512000;
     uint public constant UNFREEZE_DATE = SALE_START_DATE + 76 weeks;      // Bounty0x Reserve locked for 18 months
 
     function KnowsConstants() public {}
