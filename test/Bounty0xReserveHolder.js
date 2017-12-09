@@ -74,7 +74,7 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
       // make sure they all fail to release
       for (let time of Array.prototype.concat.apply([], timeArrays)) {
         await mockReserveHolder.setTime(time);
-        expectThrow(mockReserveHolder.release());
+        await expectThrow(mockReserveHolder.release());
 
         await assertNotWithdrawn();
       }
@@ -82,15 +82,15 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
 
     it('cannot be withdrawn just before the unfreeze date', async () => {
       await mockReserveHolder.setTime(unfreezeDate.sub(ONE_DAY_SECONDS));
-      expectThrow(mockReserveHolder.release());
+      await expectThrow(mockReserveHolder.release());
       await assertNotWithdrawn();
 
       await mockReserveHolder.setTime(unfreezeDate.sub(ONE_HOUR_SECONDS));
-      expectThrow(mockReserveHolder.release());
+      await expectThrow(mockReserveHolder.release());
       await assertNotWithdrawn();
 
       await mockReserveHolder.setTime(unfreezeDate.sub(1));
-      expectThrow(mockReserveHolder.release());
+      await expectThrow(mockReserveHolder.release());
       await assertNotWithdrawn();
     });
 
@@ -99,7 +99,7 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
       const withdrawTx = await mockReserveHolder.release();
       await assertWithdrawn();
 
-      expectThrow(mockReserveHolder.release());
+      await expectThrow(mockReserveHolder.release());
     });
 
     it('can be withdrawn after the release date', async () => {
@@ -107,7 +107,7 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
       const withdrawTx = await mockReserveHolder.release();
       await assertWithdrawn();
 
-      expectThrow(mockReserveHolder.release());
+      await expectThrow(mockReserveHolder.release());
     });
   });
 });

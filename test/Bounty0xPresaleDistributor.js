@@ -1,5 +1,4 @@
 import { withinPercentage, ZERO_ADDRESS } from './helpers/util';
-import expectThrow from './helpers/expectThrow';
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xPresaleDistributor = artifacts.require('Bounty0xPresaleDistributor');
@@ -34,10 +33,11 @@ contract('Bounty0xPresaleDistributor', function ([ deployer, contributor1, contr
       await token.generateTokens(distributor.address, Math.pow(10, 24), { from: deployer });
     });
 
-    it('can only be called by the owner', async () => {
-      await expectThrow(distributor.compensatePreSaleInvestors([ contributor1 ], { from: contributor1 }));
-      await expectThrow(distributor.compensatePreSaleInvestors([ contributor1 ], { from: contributor2 }));
-      await expectThrow(distributor.compensatePreSaleInvestors([ contributor2 ], { from: nonContributor1 }));
+    it('can be called by anyone', async () => {
+      for (let acct of [ deployer, contributor1, contributor2, nonContributor1, nonContributor2 ]) {
+        const { logs } = await distributor.compensatePreSaleInvestors([], { from: acct });
+        assert.strictEqual(logs.length, 0);
+      }
     });
 
     it('does nothing if they did not contribute', async () => {

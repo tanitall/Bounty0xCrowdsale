@@ -12,7 +12,7 @@ import './KnowsConstants.sol';
 This contract manages compensation of the presale investors, based on the contribution balances recorded in the presale
 contract.
 */
-contract Bounty0xPresaleDistributor is KnowsConstants, Ownable, BntyExchangeRateCalculator {
+contract Bounty0xPresaleDistributor is KnowsConstants, BntyExchangeRateCalculator {
     using SafeMath for uint;
 
     Bounty0xPresaleI public deployedPresaleContract;
@@ -33,7 +33,7 @@ contract Bounty0xPresaleDistributor is KnowsConstants, Ownable, BntyExchangeRate
     /**
      * Compensate the presale investors at the addresses provider based on their contributions during the presale
      */
-    function compensatePreSaleInvestors(address[] preSaleInvestors) public onlyOwner {
+    function compensatePreSaleInvestors(address[] preSaleInvestors) public {
         // iterate through each investor
         for (uint i = 0; i < preSaleInvestors.length; i++) {
             address investorAddress = preSaleInvestors[i];

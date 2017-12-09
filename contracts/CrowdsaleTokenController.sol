@@ -7,9 +7,9 @@ import './AddressWhitelist.sol';
 import './Bounty0xToken.sol';
 
 contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController {
-    Bounty0xToken token;
+    Bounty0xToken public token;
 
-    function TokenController(Bounty0xToken _token) {
+    function CrowdsaleTokenController(Bounty0xToken _token) public {
         token = _token;
     }
 
@@ -32,7 +32,7 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     /// @param _amount The amount of the transfer
     /// @return False if the controller does not authorize the transfer
     function onTransfer(address _from, address _to, uint _amount) public returns (bool) {
-        require(isWhitelisted(_from));
+        return isWhitelisted(_from);
     }
 
     /// @notice Notifies the controller about an approval allowing the
@@ -42,6 +42,6 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     /// @param _amount The amount in the `approve()` call
     /// @return False if the controller does not authorize the approval
     function onApprove(address _owner, address _spender, uint _amount) public returns (bool) {
-        require(isWhitelisted(_owner));
+        return isWhitelisted(_owner);
     }
 }

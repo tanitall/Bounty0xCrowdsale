@@ -15,4 +15,5 @@ Alternately, use truffle's develop command to more rapidly issue truffle command
 
 ## TODOS
 
-1. Implement escape hatch on Bounty0xPresaleDistributor
+1. Implement pending tests
+1. Implement more tests
