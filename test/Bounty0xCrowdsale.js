@@ -6,10 +6,10 @@ const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
 const MockBounty0xCrowdsale = artifacts.require('MockBounty0xCrowdsale');
 
-contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
+contract('Bounty0xCrowdsale', function ([ deployer, whitelistContributor1, whitelistContributor2, contributor1, contributor2 ]) {
   let deployedCrowdsale, deployedToken;
 
-  const CONTRIBUTORS = [ presaleContributor1, presaleContributor2, contributor1, contributor2 ];
+  const ALL_CONTRIBUTORS = [ whitelistContributor1, whitelistContributor2, contributor1, contributor2 ];
 
   before('get deployed bounty0x crowdsale contract', async () => {
     deployedCrowdsale = await Bounty0xCrowdsale.deployed();
@@ -30,8 +30,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
   describe('MockBounty0xCrowdsale', () => {
     let token, crowdsale, saleStartDate, saleEndDate, whitelistEndDate, limitsEndDate, maxGasPrice, maxGas,
-      hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod,
-      presale;
+      hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod;
 
     // if 1 ether === 15 million USD, we can saturate the crowdsale with .1 ETH
     const USD_ETHER_PRICE = 15 * Math.pow(10, 6);
@@ -43,7 +42,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
       crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, { from: deployer });
 
-      await crowdsale.addToWhitelist([ presaleContributor1, presaleContributor2 ], { from: deployer });
+      await crowdsale.addToWhitelist([ whitelistContributor1, whitelistContributor2 ], { from: deployer });
 
       await token.generateTokens(crowdsale.address, MAINSALE_POOL * Math.pow(10, 18), { from: deployer });
 
@@ -98,7 +97,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       await contribute(contributor1, ONE_GWEI);
 
       // no one can withdraw
-      for (let acct of CONTRIBUTORS) {
+      for (let acct of ALL_CONTRIBUTORS) {
         await expectThrow(crowdsale.withdraw(1, { from: acct }));
       }
 
@@ -109,26 +108,26 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
     it('does not accept contributions while paused', async () => {
       await crowdsale.setTime(whitelistEndDate - 1);
-      await contribute(presaleContributor1, ONE_GWEI);
+      await contribute(whitelistContributor1, ONE_GWEI);
 
       await crowdsale.pause({ from: deployer });
-      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
 
       await crowdsale.unpause({ from: deployer });
-      await contribute(presaleContributor1, ONE_GWEI);
+      await contribute(whitelistContributor1, ONE_GWEI);
     });
 
     it('does not accept 0 value contributions', async () => {
       await crowdsale.setTime(limitsEndDate + 1);
-      await expectThrow(contribute(presaleContributor1, 0));
+      await expectThrow(contribute(whitelistContributor1, 0));
     });
 
     it('should not accept contributions until SALE_START_DATE', async () => {
       await crowdsale.setTime(saleStartDate - 1);
-      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
 
       await crowdsale.setTime(saleStartDate);
-      await contribute(presaleContributor1, ONE_GWEI);
+      await contribute(whitelistContributor1, ONE_GWEI);
     });
 
     it('should not accept contributions after SALE_END_DATE', async () => {
@@ -153,7 +152,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
       await expectThrow(contribute(contributor1, maxContributionWeiWhitelist));
 
-      await contribute(presaleContributor1, maxContributionWeiWhitelist);
+      await contribute(whitelistContributor1, maxContributionWeiWhitelist);
 
       await crowdsale.setTime(whitelistEndDate);
 
@@ -164,19 +163,22 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
     it('only accepts $1.5k USD per address during whitelist period', async () => {
       await crowdsale.setTime(whitelistEndDate - 1);
 
-      const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(presaleContributor1, maxContributionWeiWhitelist.mul(3));
+      const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(whitelistContributor1, maxContributionWeiWhitelist.mul(3));
 
       assert.strictEqual(contributedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
       assert.strictEqual(refundedWei.valueOf(), maxContributionWeiWhitelist.mul(2).valueOf());
 
       // may not contribute any more
-      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
+      await expectThrow(contribute(whitelistContributor1, ONE_GWEI));
+
+      // the 2nd whitelisted contributor still can contribute
+      await contribute(whitelistContributor2, ONE_GWEI);
     });
 
     it('accepts contributions from any address after the whitelist period for 24 hours', async () => {
       await crowdsale.setTime(whitelistEndDate);
 
-      for (let acct of CONTRIBUTORS) {
+      for (let acct of ALL_CONTRIBUTORS) {
         await contribute(acct, ONE_GWEI);
       }
     });
