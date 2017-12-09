@@ -24,7 +24,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
     uint public totalContributions;                                  // Total contributions given
 
     // Events
-    event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded);
+    event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded, uint refundedWei);
     event OnWithdraw(address to, uint amount);
 
     function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice, Bounty0xPresaleI _bounty0xPresale)
@@ -43,7 +43,6 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
 
     // All contributions come through the fallback function
     function () payable public whenNotPaused {
-        // get the current time
         uint time = currentTime();
 
         // require the sale has started
@@ -52,44 +51,63 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         // require that the sale has not ended
         require(time < SALE_END_DATE);
 
-        // require we are not at the cap
-        require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_USD));
+        // max contribution is AT MOST the hard cap USD, will be adjusted below
+        uint maximumContribution = usdToWei(HARD_CAP_USD);
 
-        // require that it's more than the minimum contribution amount
-        require(msg.value >= usdToWei(MINIMUM_PARTICIPATION_USD));
-
+        // store whether the contribution is made during the whitelist period
         bool isDuringWhitelistPeriod = time < WHITELIST_END_DATE;
 
-        // these limits are only checked for the first N hours
+        // these limits are only checked during the limited period
         if (time < LIMITS_END_DATE) {
-            // require that they paid a high gas price
+            // require that they have not overpaid their gas price
             require(tx.gasprice <= MAX_GAS_PRICE);
 
             // require that they haven't sent too much gas
             require(msg.gas <= MAX_GAS);
 
-            // if we are in the presale, we need to make sure the sender contributed to the presale
+            // if we are in the WHITELIST period, we need to make sure the sender contributed to the presale
             if (isDuringWhitelistPeriod) {
                 require(bounty0xPresale.balanceOf(msg.sender) > 0);
-                // also they must adhere to the maximum of $1.5k
-                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD));
+
+                // the maximum contribution is set for the whitelist period
+                maximumContribution = usdToWei(MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD);
             } else {
-                // otherwise they adhere to the public maximum of $10k
-                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD));
+                // the maximum contribution is set for the limited period
+                maximumContribution = usdToWei(MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD);
             }
         }
 
+        // the additional amount that this address may contribute
+        uint addressMaximumContribution = maximumContribution.sub(contributionAmounts[msg.sender]);
+
+        // how much to refund the sender
+        uint refundWei = 0;
+        uint contribution = msg.value;
+
+        // sent too much
+        if (msg.value > addressMaximumContribution) {
+            contribution = addressMaximumContribution;
+            refundWei = msg.value.sub(addressMaximumContribution);
+        }
+
+        // require that they are allowed to contribute more
+        require(contribution > 0);
+
         // account contribution towards total
-        totalContributions = totalContributions.add(msg.value);
+        totalContributions = totalContributions.add(contribution);
 
         // account contribution towards address total
-        contributionAmounts[msg.sender] = contributionAmounts[msg.sender].add(msg.value);
+        contributionAmounts[msg.sender] = contributionAmounts[msg.sender].add(contribution);
 
         // and send them some bnty
-        uint amountBntyRewarded = weiToBnty(msg.value);
+        uint amountBntyRewarded = weiToBnty(contribution);
         require(bounty0xToken.transfer(msg.sender, amountBntyRewarded));
 
+        if (refundWei > 0) {
+            msg.sender.transfer(refundWei);
+        }
+
         // log the contribution
-        OnContribution(msg.sender, isDuringWhitelistPeriod, msg.value, amountBntyRewarded);
+        OnContribution(msg.sender, isDuringWhitelistPeriod, contribution, amountBntyRewarded, refundWei);
     }
 }

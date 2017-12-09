@@ -29,11 +29,13 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
   describe('MockBounty0xCrowdsale', () => {
     let token, crowdsale, saleStartDate, saleEndDate, whitelistEndDate, limitsEndDate, maxGasPrice, maxGas,
-      minContributionWei, hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod,
+      hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod,
       presale;
 
     // if 1 ether === 15 million USD, we can saturate the crowdsale with .1 ETH
     const USD_ETHER_PRICE = 15 * Math.pow(10, 6);
+
+    const ONE_GWEI = Math.pow(10, 9);
 
     beforeEach('deploy a fresh crowdsale', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
@@ -54,12 +56,10 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       maxGasPrice = await crowdsale.MAX_GAS_PRICE();
       maxGas = await crowdsale.MAX_GAS();
 
-      const minParticipationUsd = await crowdsale.MINIMUM_PARTICIPATION_USD();
       const hardCapUsd = await crowdsale.HARD_CAP_USD();
       const maxContributionUsdWhitelist = await crowdsale.MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD();
       const maxContributionUsdLimitedPeriod = await crowdsale.MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD();
 
-      minContributionWei = await crowdsale.usdToWei(minParticipationUsd);
       hardCapWei = await crowdsale.usdToWei(hardCapUsd);
       maxContributionWeiWhitelist = await crowdsale.usdToWei(maxContributionUsdWhitelist);
       maxContributionWeiLimitedPeriod = await crowdsale.usdToWei(maxContributionUsdLimitedPeriod);
@@ -75,12 +75,19 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       const { receipt: { gasUsed }, logs } = tx;
 
       assert.strictEqual(logs.length, 1);
-      assert.strictEqual(logs[ 0 ].event, 'OnContribution');
-      assert.strictEqual(logs[ 0 ].args.contributor, from);
-      assert.strictEqual(logs[ 0 ].args.duringWhitelistPeriod, time < whitelistEndDate);
-      assert.strictEqual(logs[ 0 ].args.contributedWei.sub(amount).valueOf(), '0');
-      withinPercentage(logs[ 0 ].args.bntyAwarded, (USD_ETHER_PRICE * amount) / 0.0165);
       assert.strictEqual(gasUsed < maxGas, true);
+
+      {
+        const { event, args: { contributor, duringWhitelistPeriod, contributedWei, refundedWei, bntyAwarded } } = logs[ 0 ];
+        assert.strictEqual(event, 'OnContribution');
+        assert.strictEqual(contributor, from);
+        assert.strictEqual(duringWhitelistPeriod, time < whitelistEndDate);
+        // the difference between the contributed amount and sent amount should be the refunded amount
+        assert.strictEqual(contributedWei.sub(amount).abs().valueOf(), refundedWei.valueOf());
+
+        // the bounty awarded should the contributed amount
+        withinPercentage(bntyAwarded, (contributedWei.mul(USD_ETHER_PRICE)).div(0.0165).valueOf());
+      }
 
       return tx;
     }
@@ -90,7 +97,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       await crowdsale.setTime(limitsEndDate);
 
       // contribute 1 gwei
-      await contribute(contributor1, minContributionWei);
+      await contribute(contributor1, ONE_GWEI);
 
       // no one can withdraw
       for (let acct of [ presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
@@ -104,16 +111,13 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
     it('does not accept contributions while paused', async () => {
       await crowdsale.setTime(whitelistEndDate - 1);
-
-      await contribute(presaleContributor1, minContributionWei);
+      await contribute(presaleContributor1, ONE_GWEI);
 
       await crowdsale.pause({ from: deployer });
-
-      await expectThrow(contribute(presaleContributor1, minContributionWei));
+      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
 
       await crowdsale.unpause({ from: deployer });
-
-      await contribute(presaleContributor1, minContributionWei);
+      await contribute(presaleContributor1, ONE_GWEI);
     });
 
     it('does not accept 0 value contributions', async () => {
@@ -123,25 +127,27 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
     it('should not accept contributions until SALE_START_DATE', async () => {
       await crowdsale.setTime(saleStartDate - 1);
-      await expectThrow(contribute(presaleContributor1, minContributionWei));
+      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
 
       await crowdsale.setTime(saleStartDate);
-      await contribute(presaleContributor1, minContributionWei);
+      await contribute(presaleContributor1, ONE_GWEI);
     });
 
     it('should not accept contributions after SALE_END_DATE', async () => {
       await crowdsale.setTime(saleEndDate - 1);
-      await contribute(contributor1, minContributionWei);
+      await contribute(contributor1, ONE_GWEI);
 
       await crowdsale.setTime(saleEndDate);
-      await expectThrow(contribute(contributor1, minContributionWei));
+      await expectThrow(contribute(contributor1, ONE_GWEI));
     });
 
     it('should not accept contributions beyond hard cap', async () => {
       await crowdsale.setTime(limitsEndDate);
 
-      // todo: finish test
+      // contribute the hard cap in wei to put the crowdsale at the hard cap
       await contribute(contributor1, hardCapWei / 2);
+
+      // todo: finish test
     });
 
     it('only accepts contributions greater than the minimum amount');
@@ -154,6 +160,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
     it('adds to total contributions for each wei sent');
     it('records contributions by address correctly');
     it('rewards the correct amount of BNTY for contributions');
+    it('refunds amounts in excess of the allowed amount for an address');
 
   });
 });
