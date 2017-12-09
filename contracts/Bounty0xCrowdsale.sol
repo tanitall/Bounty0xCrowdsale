@@ -24,7 +24,6 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
 
     // Events
     event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded);
-
     event OnWithdraw(address to, uint amount);
 
     function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice)
