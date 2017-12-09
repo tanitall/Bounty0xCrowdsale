@@ -22,28 +22,22 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
     mapping (address => uint) public contributionAmounts;            // The amount that each address has contributed
     uint public totalContributions;                                  // Total contributions given
 
-    // Constants derived from the USD price of ether
-    uint public maxPresaleContributionsWei;
-    uint public maxPublicSaleContributionsWei;
-    uint public hardCapWei;
-
     // Events
-    event OnContribution(address indexed contributor, bool indexed duringPresale, uint indexed contributedWei, uint bntyAwarded);
+    event OnContribution(address indexed contributor, bool indexed duringWhitelistPeriod, uint indexed contributedWei, uint bntyAwarded);
 
-    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint fixedUSDEtherPrice)
-        BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, fixedUSDEtherPrice, SALE_START_DATE)
+    event OnWithdraw(address to, uint amount);
+
+    function Bounty0xCrowdsale(Bounty0xToken _bounty0xToken, uint _USDEtherPrice)
+    BntyExchangeRateCalculator(MICRO_DOLLARS_PER_BNTY_MAINSALE, _USDEtherPrice, SALE_START_DATE)
         public
     {
         bounty0xToken = _bounty0xToken;
-
-        maxPresaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST);
-        maxPublicSaleContributionsWei = usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST);
-        hardCapWei = usdToWei(HARD_CAP_AMOUNT_USD);
     }
 
     // the crowdsale owner may withdraw any amount of ether from this contract at any time
     function withdraw(uint amount) public onlyOwner {
         msg.sender.transfer(amount);
+        OnWithdraw(msg.sender, amount);
     }
 
     // All contributions come through the fallback function
@@ -58,9 +52,12 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         require(time < SALE_END_DATE);
 
         // require we are not at the cap
-        require(totalContributions.add(msg.value) <= hardCapWei);
+        require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_AMOUNT_USD));
 
-        bool isDuringPresale = time < WHITELIST_END_DATE;
+        // require that it's more than the minimum contribution amount
+        require(msg.value >= usdToWei(MINIMUM_PARTICIPATION_AMOUNT_USD));
+
+        bool isDuringWhitelistPeriod = time < WHITELIST_END_DATE;
 
         // these limits are only checked for the first N hours
         if (time < LIMITS_END_DATE) {
@@ -71,13 +68,13 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
             require(msg.gas <= MAX_GAS);
 
             // if we are in the presale, we need to make sure the sender is on the whitelist
-            if (isDuringPresale) {
+            if (isDuringWhitelistPeriod) {
                 require(isWhitelisted(msg.sender));
                 // also they must adhere to the maximum of $1.5k
-                require(contributionAmounts[msg.sender].add(msg.value) < maxPresaleContributionsWei);
+                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST));
             } else {
                 // otherwise they adhere to the public maximum of $10k
-                require(contributionAmounts[msg.sender].add(msg.value) < maxPublicSaleContributionsWei);
+                require(contributionAmounts[msg.sender].add(msg.value) < usdToWei(MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST));
             }
         }
 
@@ -92,6 +89,6 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         require(bounty0xToken.transfer(msg.sender, amountBntyRewarded));
 
         // log the contribution
-        OnContribution(msg.sender, isDuringPresale, msg.value, amountBntyRewarded);
+        OnContribution(msg.sender, isDuringWhitelistPeriod, msg.value, amountBntyRewarded);
     }
 }
