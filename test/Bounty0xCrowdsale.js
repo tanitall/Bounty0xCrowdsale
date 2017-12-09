@@ -28,7 +28,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
   describe('MockBounty0xCrowdsale', () => {
     let token, crowdsale, saleStartDate, saleEndDate, whitelistEndDate, limitsEndDate, maxGasPrice, maxGas,
-      minContributionWei, hardCapWei, maxContributionWeiWhitelist, maxContributionWeiPostWhitelist;
+      minContributionWei, hardCapWei, maxContributionWeiWhitelist, maxContributionWeiLimitedPeriod;
 
     // if 1 ether === 15 million USD, we can saturate the crowdsale with .1 ETH
     const USD_ETHER_PRICE = 15 * Math.pow(10, 6);
@@ -50,15 +50,15 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       maxGasPrice = await crowdsale.MAX_GAS_PRICE();
       maxGas = await crowdsale.MAX_GAS();
 
-      const minParticipationUsd = await crowdsale.MINIMUM_PARTICIPATION_AMOUNT_USD();
-      const hardCapUsd = await crowdsale.HARD_CAP_AMOUNT_USD();
-      const maxContributionUsdWhitelist = await crowdsale.MAXIMUM_CONTRIBUTION_AMOUNT_USD_DURING_WHITELIST();
-      const maxContributionUsdPostWhitelist = await crowdsale.MAXIMUM_CONTRIBUTION_AMOUNT_USD_POST_WHITELIST();
+      const minParticipationUsd = await crowdsale.MINIMUM_PARTICIPATION_USD();
+      const hardCapUsd = await crowdsale.HARD_CAP_USD();
+      const maxContributionUsdWhitelist = await crowdsale.MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD();
+      const maxContributionUsdLimitedPeriod = await crowdsale.MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD();
 
       minContributionWei = await crowdsale.usdToWei(minParticipationUsd);
       hardCapWei = await crowdsale.usdToWei(hardCapUsd);
       maxContributionWeiWhitelist = await crowdsale.usdToWei(maxContributionUsdWhitelist);
-      maxContributionWeiPostWhitelist = await crowdsale.usdToWei(maxContributionUsdPostWhitelist);
+      maxContributionWeiLimitedPeriod = await crowdsale.usdToWei(maxContributionUsdLimitedPeriod);
     });
 
     async function contribute(from, amount, gas = maxGas, gasPrice = maxGasPrice) {

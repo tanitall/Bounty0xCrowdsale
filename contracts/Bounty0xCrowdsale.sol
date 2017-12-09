@@ -54,7 +54,7 @@ contract Bounty0xCrowdsale is KnowsTime, KnowsConstants, Ownable, BntyExchangeRa
         require(totalContributions.add(msg.value) <= usdToWei(HARD_CAP_USD));
 
         // require that it's more than the minimum contribution amount
-        require(msg.value >= usdToWei(MINIMUM_PARTICIPATION_AMOUNT_USD));
+        require(msg.value >= usdToWei(MINIMUM_PARTICIPATION_USD));
 
         bool isDuringWhitelistPeriod = time < WHITELIST_END_DATE;
 

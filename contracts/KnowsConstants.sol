@@ -8,7 +8,7 @@ contract KnowsConstants {
     uint public constant MICRO_DOLLARS_PER_BNTY_PRESALE = 13200;
 
     // Contribution constants
-    uint public constant MINIMUM_PARTICIPATION_AMOUNT_USD = 50;                   // in USD the minimum contribution per address
+    uint public constant MINIMUM_PARTICIPATION_USD = 50;                   // in USD the minimum contribution per address
     uint public constant HARD_CAP_USD = 1500000;                           // in USD the maximum total collected amount
     uint public constant MAXIMUM_CONTRIBUTION_WHITELIST_PERIOD_USD = 1500; // in USD the maximum contribution amount during the whitelist period
     uint public constant MAXIMUM_CONTRIBUTION_LIMITED_PERIOD_USD = 10000;  // in USD the maximum contribution amount after the whitelist period ends
