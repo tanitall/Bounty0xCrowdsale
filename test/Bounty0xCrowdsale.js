@@ -9,6 +9,8 @@ const MockBounty0xCrowdsale = artifacts.require('MockBounty0xCrowdsale');
 contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
   let deployedCrowdsale, deployedToken;
 
+  const CONTRIBUTORS = [ presaleContributor1, presaleContributor2, contributor1, contributor2 ];
+
   before('get deployed bounty0x crowdsale contract', async () => {
     deployedCrowdsale = await Bounty0xCrowdsale.deployed();
     deployedToken = await Bounty0xToken.deployed();
@@ -96,7 +98,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
       await contribute(contributor1, ONE_GWEI);
 
       // no one can withdraw
-      for (let acct of [ presaleContributor1, presaleContributor2, contributor1, contributor2 ]) {
+      for (let acct of CONTRIBUTORS) {
         await expectThrow(crowdsale.withdraw(1, { from: acct }));
       }
 
@@ -142,12 +144,43 @@ contract('Bounty0xCrowdsale', function ([ deployer, presaleContributor1, presale
 
       // contribute the hard cap in wei to put the crowdsale at the hard cap
       await contribute(contributor1, hardCapWei);
+
+      await expectThrow(contribute(contributor2, ONE_GWEI));
     });
 
-    it('only accepts contributions greater than the minimum amount');
-    it('only accepts contributions from whitelisted addresses in first 24 hours');
-    it('only accepts $1.5k USD per address during whitelist period');
-    it('accepts contributions from any address after the whitelist period for 24 hours');
+    it('only accepts contributions from whitelisted addresses in first 24 hours', async () => {
+      await crowdsale.setTime(whitelistEndDate - 1);
+
+      await expectThrow(contribute(contributor1, maxContributionWeiWhitelist));
+
+      await contribute(presaleContributor1, maxContributionWeiWhitelist);
+
+      await crowdsale.setTime(whitelistEndDate);
+
+      await contribute(contributor1, maxContributionWeiWhitelist);
+    });
+
+
+    it('only accepts $1.5k USD per address during whitelist period', async () => {
+      await crowdsale.setTime(whitelistEndDate - 1);
+
+      const { logs: [ { args: { contributedWei, refundedWei } } ] } = await contribute(presaleContributor1, maxContributionWeiWhitelist.mul(3));
+
+      assert.strictEqual(contributedWei.valueOf(), maxContributionWeiWhitelist.valueOf());
+      assert.strictEqual(refundedWei.valueOf(), maxContributionWeiWhitelist.mul(2).valueOf());
+
+      // may not contribute any more
+      await expectThrow(contribute(presaleContributor1, ONE_GWEI));
+    });
+
+    it('accepts contributions from any address after the whitelist period for 24 hours', async () => {
+      await crowdsale.setTime(whitelistEndDate);
+
+      for (let acct of CONTRIBUTORS) {
+        await contribute(acct, ONE_GWEI);
+      }
+    });
+
     it('limits gas price sent with contributions for 24 hours after whitelist period');
     it('limits gas sent with contributions for 24 hours after whitelist period');
     it('limits total contributions to $10k USD for 24 hours after whitelist period');
