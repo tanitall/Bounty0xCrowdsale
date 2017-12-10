@@ -39,13 +39,13 @@ export const TEAM_MEMBERS = [
     name: 'Sean (pt. 2)',
     wallet: PLACEHOLDER_WALLET,
     stake: 2.35690236 * Math.pow(10, 6),
-    stakeDuration: 24
+    stakeDuration: 0
   },
   {
     name: 'Sean (optional)',
     wallet: PLACEHOLDER_WALLET,
     stake: 1.01010101 * Math.pow(10, 6),
-    stakeDuration: 24
+    stakeDuration: 0
   },
   {
     name: 'Uwe (investment)',
@@ -56,15 +56,15 @@ export const TEAM_MEMBERS = [
   {
     name: 'Angelo (investment)',
     wallet: PLACEHOLDER_WALLET,
-    stake: 4.13804714 * Math.pow(10, 6),
+    stake: 3.53198653 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  //{
-  //  name: 'Cathy (investment)',
-  //  wallet: FILL_ME_IN,
-  //  stake: 0 * Math.pow(10, 6),
-  //  stakeDuration: 24
-  //},
+  {
+    name: 'Cathy (investment)',
+    wallet: PLACEHOLDER_WALLET,
+    stake: 0.60606060 * Math.pow(10, 6),
+    stakeDuration: 24
+  },
   {
     name: 'Ben (investment)',
     wallet: PLACEHOLDER_WALLET,
