@@ -14,7 +14,7 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     }
 
     // the owner of the controller can change the controller to a new contract
-    function changeController(address newController) public onlyOwner returns (bool) {
+    function changeController(address newController) public onlyOwner {
         token.changeController(newController);
     }
 
