@@ -10,62 +10,64 @@ const PRESALE_PRICE = 13200;
 const CONVERSION_TEST_CASES = [
   {
     ethPriceUSD: 355,
-    bntyMicrodollarPrice: PRESALE_PRICE,
-    ethAmt: 1
+    bntyMicrodollarPrice: PRESALE_PRICE
   },
   {
     ethPriceUSD: 460,
-    bntyMicrodollarPrice: CROWDSALE_PRICE,
-    ethAmt: 3.15
+    bntyMicrodollarPrice: CROWDSALE_PRICE
   },
   {
     ethPriceUSD: 460,
-    bntyMicrodollarPrice: CROWDSALE_PRICE,
-    ethAmt: 10
+    bntyMicrodollarPrice: CROWDSALE_PRICE
   },
   {
     ethPriceUSD: 355,
-    bntyMicrodollarPrice: PRESALE_PRICE,
-    ethAmt: 0.1
+    bntyMicrodollarPrice: PRESALE_PRICE
   },
   {
     ethPriceUSD: 460,
-    bntyMicrodollarPrice: CROWDSALE_PRICE,
-    ethAmt: 0.1
+    bntyMicrodollarPrice: CROWDSALE_PRICE
   },
 ];
 
 contract('BntyExchangeRateCalculator', function (accounts) {
   CONVERSION_TEST_CASES.forEach(
-    ({ ethPriceUSD, bntyMicrodollarPrice, ethAmt }) => {
+    ({ ethPriceUSD, bntyMicrodollarPrice }) => {
       describe(`ETH Price: $${ethPriceUSD}, USD/BNTY: $${bntyMicrodollarPrice * Math.pow(10, -6)}`, async () => {
         let calculator;
         before(async () => {
           calculator = await BntyExchangeRateCalculator.new(bntyMicrodollarPrice, ethPriceUSD, 0);
         });
 
-        it(
-          `calculates BNTY rewards correctly`,
-          async () => {
-            const rewardFor = await calculator.weiToBnty(ethAmt * Math.pow(10, 18));
+        describe('#weiToBnty', () => {
+          it(
+            `calculates BNTY per WEI correctly`,
+            async () => {
+              // for 0 wei to 10 eth
+              for (
+                let testWeiAmt = 0;
+                testWeiAmt < Math.pow(10, 19);
+                testWeiAmt = testWeiAmt === 0 ? 1 : testWeiAmt * 2
+              ) {
+                const rewardFor = await calculator.weiToBnty(testWeiAmt);
 
-            const bntyUsdPrice = bntyMicrodollarPrice * Math.pow(10, -6);
-            withinPercentage(rewardFor, (ethPriceUSD * ethAmt / bntyUsdPrice) * Math.pow(10, 18));
-          }
-        );
+                const bntyUsdPrice = bntyMicrodollarPrice * Math.pow(10, -6);
+                withinPercentage(rewardFor, (ethPriceUSD * testWeiAmt / bntyUsdPrice));
+              }
+            }
+          );
+        });
 
         describe('#usdToWei', async () => {
-
-          for (let testUsdAmt = 0; testUsdAmt < 1500000; testUsdAmt = testUsdAmt === 0 ? 50 : testUsdAmt * 2) {
-            it(
-              `calculates WEI per USD correctly for $${testUsdAmt}`, async () => {
+          it(
+            `calculates WEI per USD correctly`, async () => {
+              for (let testUsdAmt = 0; testUsdAmt < 1500000; testUsdAmt = testUsdAmt === 0 ? 1 : testUsdAmt * 2) {
                 const usdToWei = await calculator.usdToWei(testUsdAmt);
 
                 withinPercentage(usdToWei, (testUsdAmt / ethPriceUSD) * Math.pow(10, 18));
               }
-            );
-          }
-
+            }
+          );
         });
       });
     }
