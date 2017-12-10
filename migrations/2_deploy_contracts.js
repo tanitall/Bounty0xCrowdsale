@@ -79,6 +79,8 @@ module.exports = function (deployer, network, accounts) {
         bounty0xPresaleDistributor.address
       ]);
 
+      // turn on token transfers
+      const enableTransfersTx = await crowdsaleTokenController.enableTransfers(true);
     }
   );
 };

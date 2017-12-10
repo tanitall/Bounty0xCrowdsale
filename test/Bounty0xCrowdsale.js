@@ -41,6 +41,7 @@ contract('Bounty0xCrowdsale', function ([ deployer, whitelistContributor1, white
 
     beforeEach('deploy a fresh crowdsale', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
+      await token.enableTransfers(true);
 
       crowdsale = await MockBounty0xCrowdsale.new(token.address, USD_ETHER_PRICE, { from: deployer });
 

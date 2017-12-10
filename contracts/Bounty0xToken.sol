@@ -11,7 +11,7 @@ contract Bounty0xToken is MiniMeToken {
             "Bounty0x Token",           // Token name
             18   ,                      // Decimals
             "BNTY",                     // Symbol
-            true                       // Enable transfers
+            false                       // Disable transfers
         )
         public
     {

@@ -20,6 +20,7 @@ contract('Bounty0xPresaleDistributor', function ([ deployer, contributor1, contr
 
     beforeEach('set up the contract with contributors', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
+      await token.enableTransfers(true);
 
       presaleContract = await MockBounty0xPresale.new(
         [ contributor1, contributor2 ],
