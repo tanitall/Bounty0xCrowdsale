@@ -14,11 +14,16 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     }
 
     // the owner of the controller can change the controller to a new contract
-    function changeController(address newController) public onlyOwner returns (bool) {
+    function changeController(address newController) public onlyOwner {
         token.changeController(newController);
     }
 
-    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
+    // change whether transfers are enabled
+    function enableTransfers(bool _transfersEnabled) public onlyOwner {
+        token.enableTransfers(_transfersEnabled);
+    }
+
+        /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens
     /// @return True if the ether is accepted, false if it throws
     function proxyPayment(address _owner) public payable returns (bool) {

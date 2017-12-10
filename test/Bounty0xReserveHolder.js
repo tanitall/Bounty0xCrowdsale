@@ -41,6 +41,8 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
 
     beforeEach('set up the token and mock', async () => {
       token = await Bounty0xToken.new(ZERO_ADDRESS, { from: deployer });
+      await token.enableTransfers(true);
+
       mockReserveHolder = await MockBounty0xReserveHolder.new(token.address, benefactor, { from: deployer });
 
       // give it 1 million tokens
