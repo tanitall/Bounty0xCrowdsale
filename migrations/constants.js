@@ -6,19 +6,19 @@ export const TEAM_MEMBERS = [
   // FOUNDERS (total 150M)
   {
     name: 'Angelo',
-    wallet: PLACEHOLDER_WALLET,
+    wallet: '0x694a9b63ff8956f9149a69fdb662436c5353af11',
     stake: 60 * Math.pow(10, 6), // 60M
     stakeDuration: 72
   },
   {
     name: 'Deniz',
-    wallet: PLACEHOLDER_WALLET,
+    wallet: '0xbdfd4f31c55ccb866ab6ff9ed2863f1a4ceac8d6',
     stake: 45 * Math.pow(10, 6), // 45M
     stakeDuration: 72
   },
   {
     name: 'Pascal',
-    wallet: PLACEHOLDER_WALLET,
+    wallet: '0x5a1ecbf485bfb23aa6e74393e9b26b40afd95da9',
     stake: 45 * Math.pow(10, 6), // 45M
     stakeDuration: 72
   },
@@ -55,7 +55,7 @@ export const TEAM_MEMBERS = [
   },
   {
     name: 'Angelo (investment)',
-    wallet: PLACEHOLDER_WALLET,
+    wallet: '0x694a9b63ff8956f9149a69fdb662436c5353af11',
     stake: 3.53198653 * Math.pow(10, 6),
     stakeDuration: 24
   },
@@ -85,7 +85,7 @@ export const TEAM_MEMBERS = [
   }
 ];
 
-export const BOUNTY0X_WALLET = '0xc9afbf88b36a5c4a0a8a41918552e24a5c3a1958';
+export const BOUNTY0X_WALLET = '0x1c175d339e00e99daccb0cd14c50bf1bc4348ce8';
 
 export const PRESALE_CONTRACT_ADDRESS = '0x998C31DBAD9567Df0DDDA990C0Df620B79F559ea';
 
