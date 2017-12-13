@@ -7,10 +7,16 @@ import './AddressWhitelist.sol';
 import './Bounty0xToken.sol';
 
 contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController {
+    bool public whitelistOff;
     Bounty0xToken public token;
 
     function CrowdsaleTokenController(Bounty0xToken _token) public {
         token = _token;
+    }
+
+    // set the whitelistOff variable
+    function setWhitelistOff(bool _whitelistOff) public onlyOwner {
+        whitelistOff = _whitelistOff;
     }
 
     // the owner of the controller can change the controller to a new contract
@@ -23,7 +29,7 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
         token.enableTransfers(_transfersEnabled);
     }
 
-        /// @notice Called when `_owner` sends ether to the MiniMe Token contract
+    /// @notice Called when `_owner` sends ether to the MiniMe Token contract
     /// @param _owner The address that sent the ether to create tokens
     /// @return True if the ether is accepted, false if it throws
     function proxyPayment(address _owner) public payable returns (bool) {
@@ -37,7 +43,7 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     /// @param _amount The amount of the transfer
     /// @return False if the controller does not authorize the transfer
     function onTransfer(address _from, address _to, uint _amount) public returns (bool) {
-        return isWhitelisted(_from);
+        return whitelistOff || isWhitelisted(_from);
     }
 
     /// @notice Notifies the controller about an approval allowing the
@@ -47,6 +53,6 @@ contract CrowdsaleTokenController is Ownable, AddressWhitelist, TokenController 
     /// @param _amount The amount in the `approve()` call
     /// @return False if the controller does not authorize the approval
     function onApprove(address _owner, address _spender, uint _amount) public returns (bool) {
-        return isWhitelisted(_owner);
+        return whitelistOff || isWhitelisted(_owner);
     }
 }

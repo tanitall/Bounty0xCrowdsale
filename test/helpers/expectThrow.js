@@ -5,10 +5,11 @@ export default async promise => {
     const { message } = error;
 
     const invalidOpcode = message.indexOf('invalid opcode') >= 0;
+    const revert = message.indexOf('revert') >= 0;
 
     assert(
-      invalidOpcode,
-      'Expected throw, got \"' + message + '\" instead',
+      invalidOpcode || revert,
+      'Expected throw or revert, got \"' + message + '\" instead',
     );
     return;
   }
