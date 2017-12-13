@@ -53,28 +53,58 @@ contract('CrowdsaleTokenController', function (accounts) {
     }
   });
 
-  it('allows the owner to change the token controller', async () => {
-    const [ owner, ...others ] = accounts;
-
-    // create the contracts
-    const newToken = await Bounty0xToken.new(ZERO_ADDRESS, { from: owner });
-    const newTokenController = await CrowdsaleTokenController.new(newToken.address, { from: owner });
-
-    // point newToken at newTokenController
-    await newToken.changeController(newTokenController.address, { from: owner });
-
-    // iterate through the accounts asserting that you cannot
-    for (let acct of others) {
-      await expectThrow(newTokenController.changeController(ZERO_ADDRESS, { from: acct }));
-    }
-
-    // give token to address 0
-    await newTokenController.changeController(ZERO_ADDRESS, { from: owner });
-  });
-
   it('does not accept any payment to the token contract', async () => {
     for (let acct of accounts.concat([ deployedToken.address, deployedCrowdsale.address, deployedPresale.address ])) {
       assert.strictEqual(await deployedTokenController.proxyPayment.call(acct), false);
     }
+  });
+
+  describe('methods', () => {
+    const [ owner, ...others ] = accounts;
+    let newToken, newTokenController;
+
+    beforeEach(async () => {
+      // create the contracts
+      newToken = await Bounty0xToken.new(ZERO_ADDRESS, { from: owner });
+      newTokenController = await CrowdsaleTokenController.new(newToken.address, { from: owner });
+
+      // point newToken at newTokenController
+      await newToken.changeController(newTokenController.address, { from: owner });
+    });
+
+    it('allows only the owner to change the token controller', async () => {
+      // iterate through the accounts asserting that you cannot
+      for (let acct of others) {
+        await expectThrow(newTokenController.changeController(ZERO_ADDRESS, { from: acct }));
+      }
+
+      // give token to address 0
+      await newTokenController.changeController(ZERO_ADDRESS, { from: owner });
+    });
+
+
+    it('allows the owner to turn off the whitelist', async () => {
+      // iterate through the accounts asserting that you cannot change it
+      for (let acct of others) {
+        await expectThrow(newTokenController.setWhitelistOff(true, { from: acct }));
+      }
+
+      // call from the owner
+      await newTokenController.setWhitelistOff(true, { from: owner });
+    });
+
+    it('allows anyone to send or approve when whitelist is off', async () => {
+      for (let acct of accounts) {
+        assert.strictEqual(await newTokenController.onTransfer.call(acct, ZERO_ADDRESS, 0), false);
+        assert.strictEqual(await newTokenController.onApprove.call(acct, ZERO_ADDRESS, 0), false);
+      }
+
+      await newTokenController.setWhitelistOff(true, { from: owner });
+
+      for (let acct of accounts) {
+        assert.strictEqual(await newTokenController.onTransfer.call(acct, ZERO_ADDRESS, 0), true);
+        assert.strictEqual(await newTokenController.onApprove.call(acct, ZERO_ADDRESS, 0), true);
+      }
+    });
   });
 });

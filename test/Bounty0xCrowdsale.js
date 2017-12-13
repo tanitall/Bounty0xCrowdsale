@@ -1,5 +1,5 @@
 import { withinPercentage, ZERO_ADDRESS } from './helpers/util';
-import { MAINSALE_POOL } from '../migrations/constants';
+import { MAINSALE_POOL } from '../migrations/util/constants';
 import expectThrow from './helpers/expectThrow';
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');

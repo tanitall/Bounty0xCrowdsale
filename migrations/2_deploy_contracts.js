@@ -1,4 +1,4 @@
-const { BOUNTY0X_RESERVE, BOUNTY0X_WALLET, PRESALE_CONTRACT_ADDRESS, FIXED_CROWDSALE_USD_ETHER_PRICE, TEAM_MEMBERS, PRESALE_POOL, MAINSALE_POOL } = require('./constants');
+const { BOUNTY0X_RESERVE, BOUNTY0X_WALLET, PRESALE_CONTRACT_ADDRESS, FIXED_CROWDSALE_USD_ETHER_PRICE, TEAM_MEMBERS, PRESALE_POOL, MAINSALE_POOL } = require('./util/constants');
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');
 const Bounty0xCrowdsale = artifacts.require('Bounty0xCrowdsale');
@@ -8,11 +8,12 @@ const MiniMeTokenFactory = artifacts.require('MiniMeTokenFactory');
 const CrowdsaleTokenController = artifacts.require('CrowdsaleTokenController');
 const Bounty0xTokenVesting = artifacts.require('Bounty0xTokenVesting');
 
-module.exports = function (deployer, network, accounts) {
+module.exports = function (deployer, network) {
   // Helper function that deploys a contract via deployer and returns the deployed instance
   const deploy = (Contract, ...args) => deployer.deploy(Contract, ...args)
     .then(() => Contract.deployed());
 
+  const log = (...args) => network !== 'test' ? console.log(...args) : null;
 
   deployer.then(
     async () => {
@@ -53,7 +54,11 @@ module.exports = function (deployer, network, accounts) {
       // deploy the token vesting contracts
       for (let teamMember of TEAM_MEMBERS) {
         const { wallet, stake, stakeDuration, name } = teamMember;
-        const tokenVesting = await deploy(Bounty0xTokenVesting, wallet, stakeDuration);
+
+        log(`Deploying token vesting contract for ${name}...`);
+        const tokenVesting = await Bounty0xTokenVesting.new(wallet, stakeDuration);
+        log(`Deployed token vesting contract for ${name}: ${tokenVesting.address}`);
+
         await generateBNTY(tokenVesting, stake);
       }
 
@@ -63,6 +68,7 @@ module.exports = function (deployer, network, accounts) {
         bounty0xToken.address,
         FIXED_CROWDSALE_USD_ETHER_PRICE
       );
+
       // fund the crowdsale
       await generateBNTY(bounty0xCrowdsale, MAINSALE_POOL);
 
