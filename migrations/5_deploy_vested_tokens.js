@@ -5,14 +5,30 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = function (deployer, network) {
+  const vestedTokensPath = path.resolve(__dirname, '../build/vested-tokens.json');
+
+  function readFile () {
+    const exists = fs.existsSync(vestedTokensPath);
+    const file = exists ? JSON.parse(fs.readFileSync(vestedTokensPath)) : { [network]: {} };
+    file[network] = file[network] || {};
+    return file;
+  }
+
+  function writeFile (vestingContracts) {
+    // export out the addresses to a file
+    if (!fs.existsSync(path.resolve(__dirname, '../build'))) {
+      fs.mkdirSync(path.resolve(__dirname, '../build'));
+    }
+
+    fs.writeFileSync(vestedTokensPath, JSON.stringify(vestingContracts));
+  }
+
   // deploy the token vesting contracts and save the results to a file (workaround so we can share the information between contracts)
   deployer.then(async () => {
-    const vestedTokensPath = path.resolve(__dirname, '../build/vested-tokens.json');
-    const exists = fs.existsSync(vestedTokensPath);
-    const vestingContracts = exists ? JSON.parse(fs.readFileSync(vestedTokensPath)) : { [network]: {} };
+    const vestingContracts = readFile();
 
     for (let id in VESTED_TOKEN_CONTRACTS) {
-      if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id)) {
+      if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id) && !vestingContracts[network][id]) {
         const { wallet, stakeDuration } = VESTED_TOKEN_CONTRACTS[id];
 
         console.log(`Deploying token vesting contract for ${id}...`);
@@ -20,14 +36,9 @@ module.exports = function (deployer, network) {
         console.log(`Deployed token vesting contract for ${id}: ${tokenVesting.address}`);
 
         vestingContracts[network][id] = tokenVesting.address;
+
+        writeFile(vestingContracts);
       }
     }
-
-    // export out the addresses to a file
-    if (!fs.existsSync(path.resolve(__dirname, '../build'))) {
-      fs.mkdirSync(path.resolve(__dirname, '../build'));
-    }
-
-    fs.writeFileSync(vestedTokensPath, JSON.stringify(vestingContracts));
   });
 };

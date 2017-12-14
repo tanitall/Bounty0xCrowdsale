@@ -16,14 +16,11 @@ module.exports = function (deployer, network) {
       const vestedTokens = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../build/vested-tokens.json')));
 
       const bounty0xToken = await Bounty0xToken.deployed();
-      const bounty0xCrowdsale = await Bounty0xCrowdsale.deployed();
-      const bounty0xPresaleDistributor = await Bounty0xPresaleDistributor.deployed();
-      const bounty0xReserveHolder = await Bounty0xReserveHolder.deployed();
 
       const BALANCES = [
-        [bounty0xCrowdsale.address, MAINSALE_POOL],
-        [bounty0xPresaleDistributor.address, PRESALE_POOL],
-        [bounty0xReserveHolder.address, BOUNTY0X_RESERVE],
+        [Bounty0xCrowdsale.address, MAINSALE_POOL],
+        [Bounty0xPresaleDistributor.address, PRESALE_POOL],
+        [Bounty0xReserveHolder.address, BOUNTY0X_RESERVE],
       ];
 
       for (let id in VESTED_TOKEN_CONTRACTS) {

@@ -7,8 +7,6 @@ module.exports = function (deployer) {
   deployer.then(
     async () => {
       const bounty0xToken = await Bounty0xToken.deployed();
-      const bounty0xCrowdsale = await Bounty0xCrowdsale.deployed();
-      const bounty0xPresaleDistributor = await Bounty0xPresaleDistributor.deployed();
 
       // deploy the token controller
       await deployer.deploy(CrowdsaleTokenController, bounty0xToken.address);
@@ -19,8 +17,8 @@ module.exports = function (deployer) {
 
       // whitelist the distributors to be able to sent bounty0x
       const whitelistDistributorContractsTx = await crowdsaleTokenController.addToWhitelist([
-        bounty0xCrowdsale.address,
-        bounty0xPresaleDistributor.address
+        Bounty0xCrowdsale.address,
+        Bounty0xPresaleDistributor.address
       ]);
 
       // turn on token transfers
