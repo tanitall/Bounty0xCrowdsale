@@ -9,14 +9,10 @@ module.exports = function (deployer) {
       // whitelist all the addresses on the whitelist with chunks of 100
       const bounty0xCrowdsale = await Bounty0xCrowdsale.deployed();
 
-      const promises = [];
-
       // send a transaction for each 100 addresses
       for (let i = 0; i < VALID_WHITELIST_ADDRESSES.length; i += 100) {
-        promises.push(bounty0xCrowdsale.addToWhitelist(VALID_WHITELIST_ADDRESSES.slice(i, i + 100)));
+        await bounty0xCrowdsale.addToWhitelist(VALID_WHITELIST_ADDRESSES.slice(i, i + 100));
       }
-
-      await Promise.all(promises);
     }
   );
 };

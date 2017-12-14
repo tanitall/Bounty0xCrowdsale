@@ -37,16 +37,12 @@ module.exports = function (deployer, network) {
       writeFile(vestingContracts);
     }
 
-    const promises = [];
-
     for (let id in VESTED_TOKEN_CONTRACTS) {
       if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id) && !vestingContracts[network][id]) {
         const { wallet, stakeDuration } = VESTED_TOKEN_CONTRACTS[id];
 
-        promises.push(deployVestedToken(wallet, stakeDuration, id));
+        await deployVestedToken(wallet, stakeDuration, id);
       }
     }
-
-    await Promise.all(promises);
   });
 };
