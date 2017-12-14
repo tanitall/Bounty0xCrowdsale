@@ -1,6 +1,5 @@
 const { BOUNTY0X_RESERVE, PRESALE_POOL, MAINSALE_POOL } = require('./util/constants');
 const { VESTED_TOKEN_CONTRACTS } = require('./util/constants');
-const generateBNTY = require('./util/generateBNTY');
 
 const fs = require('fs');
 const path = require('path');
