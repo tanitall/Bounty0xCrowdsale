@@ -2,88 +2,70 @@ const PLACEHOLDER_WALLET = '0x0000000000000000000000000000000000000001';
 
 //////// THESE CONSTANTS SHOULD BE TRIPLE CHECKED /////////////
 
-export const TEAM_MEMBERS = [
+export const VESTED_TOKEN_CONTRACTS = {
   // FOUNDERS (total 150M)
-  {
-    name: 'Angelo',
+  'Angelo': {
     wallet: '0x694a9b63ff8956f9149a69fdb662436c5353af11',
     stake: 60 * Math.pow(10, 6), // 60M
     stakeDuration: 72
   },
-  {
-    name: 'Deniz',
+  'Deniz': {
     wallet: '0xbdfd4f31c55ccb866ab6ff9ed2863f1a4ceac8d6',
     stake: 45 * Math.pow(10, 6), // 45M
     stakeDuration: 72
   },
-  {
-    name: 'Pascal',
+  'Pascal': {
     wallet: '0x5a1ecbf485bfb23aa6e74393e9b26b40afd95da9',
     stake: 45 * Math.pow(10, 6), // 45M
     stakeDuration: 72
   },
   // ADVISERS (total 15M)
-  {
-    name: 'Ben',
+  'Ben': {
     wallet: PLACEHOLDER_WALLET,
     stake: 3.23232323 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  {
-    name: 'Sean (pt. 1)',
+  'Sean (pt. 1)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 2.020202 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  {
-    name: 'Sean (pt. 2)',
+  'Sean (pt. 2)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 2.35690236 * Math.pow(10, 6),
     stakeDuration: 0
   },
-  {
-    name: 'Sean (optional)',
+  'Sean (optional)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 1.01010101 * Math.pow(10, 6),
     stakeDuration: 0
   },
-  {
-    name: 'Uwe (investment)',
+  'Uwe (investment)': {
     wallet: PLACEHOLDER_WALLET,
-    stake: 1.21212121 * Math.pow(10, 6),
+    stake: (1.21212121 * Math.pow(10, 6)) + (0.30303030 * Math.pow(10, 6)),
     stakeDuration: 24
   },
-  {
-    name: 'Angelo (investment)',
+  'Angelo (investment)': {
     wallet: '0x694a9b63ff8956f9149a69fdb662436c5353af11',
     stake: 3.53198653 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  {
-    name: 'Cathy (investment)',
+  'Cathy (investment)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 0.60606060 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  {
-    name: 'Ben (investment)',
+  'Ben (investment)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 0.36363636 * Math.pow(10, 6),
     stakeDuration: 24
   },
-  {
-    name: 'Uwe (investment)',
-    wallet: PLACEHOLDER_WALLET,
-    stake: 0.30303030 * Math.pow(10, 6),
-    stakeDuration: 24
-  },
-  {
-    name: 'George (investment)',
+  'George (investment)': {
     wallet: PLACEHOLDER_WALLET,
     stake: 0.36363636 * Math.pow(10, 6),
     stakeDuration: 24
   }
-];
+};
 
 export const BOUNTY0X_WALLET = '0x1c175d339e00e99daccb0cd14c50bf1bc4348ce8';
 
