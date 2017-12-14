@@ -22,6 +22,10 @@ module.exports = function (deployer) {
     }
 
     // export out the addresses to a file
+    if (!fs.existsSync(path.resolve(__dirname, '../build'))) {
+      fs.mkdirSync(path.resolve(__dirname, '../build'));
+    }
+
     fs.writeFileSync(path.resolve(__dirname, '../build/vested-tokens.json'), JSON.stringify(vestingContracts));
   });
 };

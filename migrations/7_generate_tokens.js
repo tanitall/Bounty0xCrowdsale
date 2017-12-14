@@ -20,20 +20,26 @@ module.exports = function (deployer) {
       const bounty0xPresaleDistributor = await Bounty0xPresaleDistributor.deployed();
       const bounty0xReserveHolder = await Bounty0xReserveHolder.deployed();
 
-      // fund the crowdsale
-      await bounty0xToken.generateTokens(bounty0xCrowdsale.address, MAINSALE_POOL * Math.pow(10, 18));
-      await bounty0xToken.generateTokens(bounty0xPresaleDistributor.address, PRESALE_POOL * Math.pow(10, 18));
-      await bounty0xToken.generateTokens(bounty0xReserveHolder.address, BOUNTY0X_RESERVE * Math.pow(10, 18));
+      const BALANCES = [
+        [bounty0xCrowdsale.address, MAINSALE_POOL],
+        [bounty0xPresaleDistributor.address, PRESALE_POOL],
+        [bounty0xReserveHolder.address, BOUNTY0X_RESERVE],
+      ];
 
       for (let id in VESTED_TOKEN_CONTRACTS) {
         if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id)) {
           const { stake } = VESTED_TOKEN_CONTRACTS[id];
           const address = vestedTokens[id];
 
-          console.log(`Generating ${stake} tokens for ${id} at address ${address}`);
-          await bounty0xToken.generateTokens(address, stake * Math.pow(10, 18));
+          BALANCES.push([address, stake]);
         }
       }
+
+      // fund the crowdsale
+      await bounty0xToken.generateTokensAll(
+        BALANCES.map(([address, amount]) => address),
+        BALANCES.map(([address, amount]) => amount * Math.pow(10, 18))
+      );
     }
   );
 };

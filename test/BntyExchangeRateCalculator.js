@@ -1,5 +1,5 @@
-import { ONE_DAY_SECONDS, ONE_HOUR_SECONDS, withinPercentage } from './helpers/util';
 import expectThrow from './helpers/expectThrow';
+import { ONE_DAY_SECONDS, ONE_HOUR_SECONDS, withinPercentage } from './helpers/util';
 
 const BntyExchangeRateCalculator = artifacts.require('BntyExchangeRateCalculator');
 const MockBntyExchangeRateCalculator = artifacts.require('MockBntyExchangeRateCalculator');
@@ -13,21 +13,25 @@ const CONVERSION_TEST_CASES = [
     bntyMicrodollarPrice: PRESALE_PRICE
   },
   {
-    ethPriceUSD: 460,
-    bntyMicrodollarPrice: CROWDSALE_PRICE
-  },
-  {
-    ethPriceUSD: 460,
-    bntyMicrodollarPrice: CROWDSALE_PRICE
-  },
-  {
     ethPriceUSD: 355,
+    bntyMicrodollarPrice: CROWDSALE_PRICE
+  },
+  {
+    ethPriceUSD: 460,
     bntyMicrodollarPrice: PRESALE_PRICE
   },
   {
     ethPriceUSD: 460,
     bntyMicrodollarPrice: CROWDSALE_PRICE
   },
+  {
+    ethPriceUSD: 750,
+    bntyMicrodollarPrice: PRESALE_PRICE
+  },
+  {
+    ethPriceUSD: 750,
+    bntyMicrodollarPrice: CROWDSALE_PRICE
+  }
 ];
 
 contract('BntyExchangeRateCalculator', function (accounts) {
