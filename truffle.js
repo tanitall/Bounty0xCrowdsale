@@ -4,7 +4,8 @@ require('babel-polyfill');
 const web3 = require('web3');
 const HDWalletProvider = require('truffle-hdwallet-provider');
 
-const EIGHT_GWEI = 8 * Math.pow(10, 9);
+const ONE_GWEI = Math.pow(10, 9);
+const EIGHT_GWEI = 8 * ONE_GWEI;
 
 module.exports = {
   networks: {
@@ -22,6 +23,13 @@ module.exports = {
       network_id: 2,
       gasPrice: EIGHT_GWEI
     },
+    kovan: {
+      provider: function () {
+        return new HDWalletProvider(process.env.MNEMONIC_KOVAN, 'https://kovan.infura.io/3aPdTSUEXEXeffefJPDb');
+      },
+      network_id: 42,
+      gasPrice: EIGHT_GWEI * 2
+    },
     rinkeby: {
       provider: function () {
         return new HDWalletProvider(process.env.MNEMONIC_RINKEBY, 'https://rinkeby.infura.io/3aPdTSUEXEXeffefJPDb');
@@ -38,8 +46,8 @@ module.exports = {
     },
     solc: {
       optimizer: {
-        enabled: false,
-        runs: 500
+        enabled: true,
+        runs: 200
       }
     }
   }

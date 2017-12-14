@@ -16,4 +16,13 @@ contract Bounty0xToken is MiniMeToken {
         public
     {
     }
+
+    // generate tokens for many addresses with a single transaction
+    function generateTokensAll(address[] _owners, uint[] _amounts) onlyController public {
+        require(_owners.length == _amounts.length);
+
+        for (uint i = 0; i < _owners.length; i++) {
+            require(generateTokens(_owners[i], _amounts[i]));
+        }
+    }
 }

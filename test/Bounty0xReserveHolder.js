@@ -19,7 +19,7 @@ contract('Bounty0xReserveHolder', ([ deployer, benefactor ]) => {
     assert.strictEqual(typeof bounty0xReserveHolder.address, 'string');
   });
 
-  it('should have a balance of 225.15M', async () => {
+  it('should have a balance of 225.14M', async () => {
     const balance = await token.balanceOf(bounty0xReserveHolder.address);
     assert.strictEqual(balance.valueOf(), '2.2514e+26');
   });
