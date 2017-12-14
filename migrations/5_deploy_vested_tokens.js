@@ -27,18 +27,26 @@ module.exports = function (deployer, network) {
   deployer.then(async () => {
     const vestingContracts = readFile();
 
+    async function deployVestedToken (wallet, stakeDuration, id) {
+      console.log(`Deploying token vesting contract for ${id}...`);
+      const tokenVesting = await Bounty0xTokenVesting.new(wallet, stakeDuration);
+      console.log(`Deployed token vesting contract for ${id}: ${tokenVesting.address}`);
+
+      vestingContracts[network][id] = tokenVesting.address;
+
+      writeFile(vestingContracts);
+    }
+
+    const promises = [];
+
     for (let id in VESTED_TOKEN_CONTRACTS) {
       if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id) && !vestingContracts[network][id]) {
         const { wallet, stakeDuration } = VESTED_TOKEN_CONTRACTS[id];
 
-        console.log(`Deploying token vesting contract for ${id}...`);
-        const tokenVesting = await Bounty0xTokenVesting.new(wallet, stakeDuration);
-        console.log(`Deployed token vesting contract for ${id}: ${tokenVesting.address}`);
-
-        vestingContracts[network][id] = tokenVesting.address;
-
-        writeFile(vestingContracts);
+        promises.push(deployVestedToken(wallet, stakeDuration, id));
       }
     }
+
+    await Promise.all(promises);
   });
 };

@@ -28,7 +28,7 @@ module.exports = {
         return new HDWalletProvider(process.env.MNEMONIC_KOVAN, 'https://kovan.infura.io/3aPdTSUEXEXeffefJPDb');
       },
       network_id: 42,
-      gasPrice: ONE_GWEI
+      gasPrice: EIGHT_GWEI * 2
     },
     rinkeby: {
       provider: function () {
