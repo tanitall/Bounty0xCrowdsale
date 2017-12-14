@@ -10,7 +10,7 @@ const Bounty0xReserveHolder = artifacts.require('Bounty0xReserveHolder');
 const CrowdsaleTokenController = artifacts.require('CrowdsaleTokenController');
 const Bounty0xTokenVesting = artifacts.require('Bounty0xTokenVesting');
 
-module.exports = function (deployer) {
+module.exports = function (deployer, network) {
   deployer.then(
     async () => {
       const vestedTokens = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../build/vested-tokens.json')));
@@ -29,7 +29,7 @@ module.exports = function (deployer) {
       for (let id in VESTED_TOKEN_CONTRACTS) {
         if (VESTED_TOKEN_CONTRACTS.hasOwnProperty(id)) {
           const { stake } = VESTED_TOKEN_CONTRACTS[id];
-          const address = vestedTokens[id];
+          const address = vestedTokens[network][id];
 
           BALANCES.push([address, stake]);
         }
