@@ -1,3 +1,4 @@
+import expectThrow from './helpers/expectThrow';
 import { ZERO_ADDRESS } from './helpers/util';
 
 const Bounty0xToken = artifacts.require('Bounty0xToken');
@@ -56,5 +57,37 @@ contract('Bounty0xToken', (accounts) => {
     assert.strictEqual(decimals.valueOf(), '18');
     assert.strictEqual(symbol, 'BNTY');
     assert.strictEqual(transfersEnabled, true);
+  });
+
+  describe('#generateTokensAll', () => {
+    let bounty0xToken;
+    const [controller, ...others] = accounts;
+
+    before(async () => {
+      bounty0xToken = await Bounty0xToken.new(ZERO_ADDRESS, { from: controller });
+    });
+
+    it('only allows controller to control it', async () => {
+      for (let other of others) {
+        await expectThrow(bounty0xToken.generateTokensAll([], [], { from: other }));
+      }
+
+      await bounty0xToken.generateTokensAll([], [], { from: controller });
+    });
+
+    it('generates amounts of tokens for all addresses', async () => {
+      const balances = [];
+
+      for (let i = 0; i < others.length; i++) {
+        balances.push(i * 10);
+      }
+
+      await bounty0xToken.generateTokensAll(others, balances, { from: controller });
+
+      for (let i = 0; i < others.length; i++) {
+        const balance = await bounty0xToken.balanceOf(others[i]);
+        assert.strictEqual(balance.valueOf(), '' + (i * 10));
+      }
+    });
   });
 });
