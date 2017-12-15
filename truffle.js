@@ -14,7 +14,8 @@ module.exports = {
         return new HDWalletProvider(process.env.MNEMONIC, 'https://mainnet.infura.io/3aPdTSUEXEXeffefJPDb');
       },
       network_id: 1,
-      gasPrice: EIGHT_GWEI
+      gasPrice: ONE_GWEI * 50,
+      gas: 6700000
     },
     ropsten: {
       provider: function () {
@@ -35,7 +36,8 @@ module.exports = {
         return new HDWalletProvider(process.env.MNEMONIC_RINKEBY, 'https://rinkeby.infura.io/3aPdTSUEXEXeffefJPDb');
       },
       network_id: 4,
-      gasPrice: EIGHT_GWEI,
+      gasPrice: EIGHT_GWEI * 3,
+      gas: 6700000
     },
     ganache: {
       provider: function () {
@@ -46,7 +48,7 @@ module.exports = {
     },
     solc: {
       optimizer: {
-        enabled: true,
+        enabled: false,
         runs: 200
       }
     }
