@@ -34,14 +34,21 @@ module.exports = {
       provider: function () {
         return new HDWalletProvider(process.env.MNEMONIC_RINKEBY, 'https://rinkeby.infura.io/3aPdTSUEXEXeffefJPDb');
       },
-      network_id: 3,
-      gasPrice: EIGHT_GWEI
+      network_id: 4,
+      gasPrice: EIGHT_GWEI,
+      gas: 6600000
     },
     ganache: {
       provider: function () {
         return new web3.providers.HttpProvider('http://127.0.0.1:7545');
       },
       network_id: 5777,
+      gasPrice: EIGHT_GWEI
+    },
+    development: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*",
       gasPrice: EIGHT_GWEI
     },
     solc: {
