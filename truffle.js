@@ -45,12 +45,6 @@ module.exports = {
       network_id: 5777,
       gasPrice: EIGHT_GWEI
     },
-    development: {
-      host: "localhost",
-      port: 8545,
-      network_id: "*",
-      gasPrice: EIGHT_GWEI
-    },
     solc: {
       optimizer: {
         enabled: true,
