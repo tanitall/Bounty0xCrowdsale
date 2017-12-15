@@ -39,12 +39,6 @@ module.exports = {
       gasPrice: EIGHT_GWEI * 3,
       gas: 6700000
     },
-    development: {
-      host: "localhost",
-      port: 8545,
-      network_id: "*",
-      gasPrice: EIGHT_GWEI * 2,
-    },
     ganache: {
       provider: function () {
         return new web3.providers.HttpProvider('http://127.0.0.1:7545');
