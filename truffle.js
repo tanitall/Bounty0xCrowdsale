@@ -36,7 +36,6 @@ module.exports = {
       },
       network_id: 4,
       gasPrice: EIGHT_GWEI,
-      gas: 6600000
     },
     ganache: {
       provider: function () {
