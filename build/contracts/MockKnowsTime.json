@@ -1,0 +1,485 @@
+{
+  "contractName": "MockKnowsTime",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_time",
+          "type": "uint256"
+        }
+      ],
+      "name": "setTime",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ],
+  "bytecode": "0x6060604052341561000f57600080fd5b4260008190555060d3806100246000396000f3006060604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680633beb26c414604e578063d18e81b314606e575b600080fd5b3415605857600080fd5b606c60048080359060200190919050506094565b005b3415607857600080fd5b607e609e565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a7230582083043acd72473178538152aed938f3f9e71a260f3272ad00286d4720b673c70c0029",
+  "deployedBytecode": "0x6060604052600436106049576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680633beb26c414604e578063d18e81b314606e575b600080fd5b3415605857600080fd5b606c60048080359060200190919050506094565b005b3415607857600080fd5b607e609e565b6040518082815260200191505060405180910390f35b8060008190555050565b600080549050905600a165627a7a7230582083043acd72473178538152aed938f3f9e71a260f3272ad00286d4720b673c70c0029",
+  "sourceMap": "132:274:16:-;;;190:59;;;;;;;;239:3;232:4;:10;;;;132:274;;;;;;",
+  "deployedSourceMap": "132:274:16:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;255:65;;;;;;;;;;;;;;;;;;;;;;;;;;326:78;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;255:65;308:5;301:4;:12;;;;255:65;:::o;326:78::-;370:4;393;;386:11;;326:78;:::o",
+  "source": "pragma solidity ^0.4.18;\n\nimport '../KnowsTime.sol';\n\n// This mock contract is used to test contracts that rely on the current time\ncontract MockKnowsTime is KnowsTime {\n    uint time;\n\n    function MockKnowsTime() public {\n        time = now;\n    }\n\n    function setTime(uint _time) public {\n        time = _time;\n    }\n\n    function currentTime() public view returns (uint) {\n        return time;\n    }\n}\n",
+  "sourcePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/mocks/MockKnowsTime.sol",
+  "ast": {
+    "attributes": {
+      "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/mocks/MockKnowsTime.sol",
+      "exportedSymbols": {
+        "MockKnowsTime": [
+          1238
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.4",
+            ".18"
+          ]
+        },
+        "id": 1206,
+        "name": "PragmaDirective",
+        "src": "0:24:16"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 1017,
+          "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/KnowsTime.sol",
+          "file": "../KnowsTime.sol",
+          "scope": 1239,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1207,
+        "name": "ImportDirective",
+        "src": "26:26:16"
+      },
+      {
+        "attributes": {
+          "contractDependencies": [
+            1016
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            1238,
+            1016
+          ],
+          "name": "MockKnowsTime",
+          "scope": 1239
+        },
+        "children": [
+          {
+            "attributes": {
+              "arguments": [
+                null
+              ]
+            },
+            "children": [
+              {
+                "attributes": {
+                  "contractScope": null,
+                  "name": "KnowsTime",
+                  "referencedDeclaration": 1016,
+                  "type": "contract KnowsTime"
+                },
+                "id": 1208,
+                "name": "UserDefinedTypeName",
+                "src": "158:9:16"
+              }
+            ],
+            "id": 1209,
+            "name": "InheritanceSpecifier",
+            "src": "158:9:16"
+          },
+          {
+            "attributes": {
+              "constant": false,
+              "name": "time",
+              "scope": 1238,
+              "stateVariable": true,
+              "storageLocation": "default",
+              "type": "uint256",
+              "value": null,
+              "visibility": "internal"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "name": "uint",
+                  "type": "uint256"
+                },
+                "id": 1210,
+                "name": "ElementaryTypeName",
+                "src": "174:4:16"
+              }
+            ],
+            "id": 1211,
+            "name": "VariableDeclaration",
+            "src": "174:9:16"
+          },
+          {
+            "attributes": {
+              "constant": false,
+              "implemented": true,
+              "isConstructor": true,
+              "modifiers": [
+                null
+              ],
+              "name": "MockKnowsTime",
+              "payable": false,
+              "scope": 1238,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1212,
+                "name": "ParameterList",
+                "src": "212:2:16"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1213,
+                "name": "ParameterList",
+                "src": "222:0:16"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "operator": "=",
+                          "type": "uint256"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 1211,
+                              "type": "uint256",
+                              "value": "time"
+                            },
+                            "id": 1214,
+                            "name": "Identifier",
+                            "src": "232:4:16"
+                          },
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 3070,
+                              "type": "uint256",
+                              "value": "now"
+                            },
+                            "id": 1215,
+                            "name": "Identifier",
+                            "src": "239:3:16"
+                          }
+                        ],
+                        "id": 1216,
+                        "name": "Assignment",
+                        "src": "232:10:16"
+                      }
+                    ],
+                    "id": 1217,
+                    "name": "ExpressionStatement",
+                    "src": "232:10:16"
+                  }
+                ],
+                "id": 1218,
+                "name": "Block",
+                "src": "222:27:16"
+              }
+            ],
+            "id": 1219,
+            "name": "FunctionDefinition",
+            "src": "190:59:16"
+          },
+          {
+            "attributes": {
+              "constant": false,
+              "implemented": true,
+              "isConstructor": false,
+              "modifiers": [
+                null
+              ],
+              "name": "setTime",
+              "payable": false,
+              "scope": 1238,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_time",
+                      "scope": 1229,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1220,
+                        "name": "ElementaryTypeName",
+                        "src": "272:4:16"
+                      }
+                    ],
+                    "id": 1221,
+                    "name": "VariableDeclaration",
+                    "src": "272:10:16"
+                  }
+                ],
+                "id": 1222,
+                "name": "ParameterList",
+                "src": "271:12:16"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1223,
+                "name": "ParameterList",
+                "src": "291:0:16"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "operator": "=",
+                          "type": "uint256"
+                        },
+                        "children": [
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 1211,
+                              "type": "uint256",
+                              "value": "time"
+                            },
+                            "id": 1224,
+                            "name": "Identifier",
+                            "src": "301:4:16"
+                          },
+                          {
+                            "attributes": {
+                              "argumentTypes": null,
+                              "overloadedDeclarations": [
+                                null
+                              ],
+                              "referencedDeclaration": 1221,
+                              "type": "uint256",
+                              "value": "_time"
+                            },
+                            "id": 1225,
+                            "name": "Identifier",
+                            "src": "308:5:16"
+                          }
+                        ],
+                        "id": 1226,
+                        "name": "Assignment",
+                        "src": "301:12:16"
+                      }
+                    ],
+                    "id": 1227,
+                    "name": "ExpressionStatement",
+                    "src": "301:12:16"
+                  }
+                ],
+                "id": 1228,
+                "name": "Block",
+                "src": "291:29:16"
+              }
+            ],
+            "id": 1229,
+            "name": "FunctionDefinition",
+            "src": "255:65:16"
+          },
+          {
+            "attributes": {
+              "constant": true,
+              "implemented": true,
+              "isConstructor": false,
+              "modifiers": [
+                null
+              ],
+              "name": "currentTime",
+              "payable": false,
+              "scope": 1238,
+              "stateMutability": "view",
+              "superFunction": 1015,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1230,
+                "name": "ParameterList",
+                "src": "346:2:16"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "",
+                      "scope": 1237,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1231,
+                        "name": "ElementaryTypeName",
+                        "src": "370:4:16"
+                      }
+                    ],
+                    "id": 1232,
+                    "name": "VariableDeclaration",
+                    "src": "370:4:16"
+                  }
+                ],
+                "id": 1233,
+                "name": "ParameterList",
+                "src": "369:6:16"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "functionReturnParameters": 1233
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "overloadedDeclarations": [
+                            null
+                          ],
+                          "referencedDeclaration": 1211,
+                          "type": "uint256",
+                          "value": "time"
+                        },
+                        "id": 1234,
+                        "name": "Identifier",
+                        "src": "393:4:16"
+                      }
+                    ],
+                    "id": 1235,
+                    "name": "Return",
+                    "src": "386:11:16"
+                  }
+                ],
+                "id": 1236,
+                "name": "Block",
+                "src": "376:28:16"
+              }
+            ],
+            "id": 1237,
+            "name": "FunctionDefinition",
+            "src": "326:78:16"
+          }
+        ],
+        "id": 1238,
+        "name": "ContractDefinition",
+        "src": "132:274:16"
+      }
+    ],
+    "id": 1239,
+    "name": "SourceUnit",
+    "src": "0:407:16"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.18+commit.9cf6e910.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "1.0.1",
+  "updatedAt": "2017-12-15T09:52:09.195Z"
+}
