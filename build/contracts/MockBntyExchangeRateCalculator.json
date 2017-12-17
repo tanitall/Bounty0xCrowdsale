@@ -1,0 +1,551 @@
+{
+  "contractName": "MockBntyExchangeRateCalculator",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "USDEtherPrice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "amtWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "weiToBnty",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_time",
+          "type": "uint256"
+        }
+      ],
+      "name": "setTime",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fixUSDPriceTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "MICRODOLLARS_PER_DOLLAR",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "WEI_PER_ETH",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "usd",
+          "type": "uint256"
+        }
+      ],
+      "name": "usdToWei",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "bntyMicrodollarPrice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_USDEtherPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "setUSDEtherPrice",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_bntyMicrodollarPrice",
+          "type": "uint256"
+        },
+        {
+          "name": "_USDEtherPrice",
+          "type": "uint256"
+        },
+        {
+          "name": "_fixUSDPriceTime",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x6060604052341561000f57600080fd5b60405160608061070583398101604052808051906020019091908051906020019091908051906020019091905050828282336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555060008311151561008f57600080fd5b60008211151561009e57600080fd5b82600181905550806003819055508160028190555050505042600481905550505050610636806100cf6000396000f3006060604052600436106100ba576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630563bbf6146100bf5780632f1a8177146100e85780633beb26c41461011f57806356639a8e146101425780636fa65c4f1461016b57806374ffdcd0146101945780638da5cb5b146101bd578063a6a8613014610212578063b8d415c914610249578063d18e81b314610272578063e79fb53c1461029b578063f2fde38b146102be575b600080fd5b34156100ca57600080fd5b6100d26102f7565b6040518082815260200191505060405180910390f35b34156100f357600080fd5b61010960048080359060200190919050506102fd565b6040518082815260200191505060405180910390f35b341561012a57600080fd5b6101406004808035906020019091905050610344565b005b341561014d57600080fd5b61015561034e565b6040518082815260200191505060405180910390f35b341561017657600080fd5b61017e610354565b6040518082815260200191505060405180910390f35b341561019f57600080fd5b6101a761035b565b6040518082815260200191505060405180910390f35b34156101c857600080fd5b6101d0610367565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b341561021d57600080fd5b610233600480803590602001909190505061038c565b6040518082815260200191505060405180910390f35b341561025457600080fd5b61025c6103c4565b6040518082815260200191505060405180910390f35b341561027d57600080fd5b6102856103ca565b6040518082815260200191505060405180910390f35b34156102a657600080fd5b6102bc60048080359060200190919050506103d4565b005b34156102c957600080fd5b6102f5600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190505061045f565b005b60025481565b600061033d60015461032f84610321620f42406002546105b490919063ffffffff16565b6105b490919063ffffffff16565b6105ef90919063ffffffff16565b9050919050565b8060048190555050565b60035481565b620f424081565b670de0b6b3a764000081565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60006103bd6002546103af84670de0b6b3a76400006105b490919063ffffffff16565b6105ef90919063ffffffff16565b9050919050565b60015481565b6000600454905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561042f57600080fd5b60035461043a6103ca565b10151561044657600080fd5b60008111151561045557600080fd5b8060028190555050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415156104ba57600080fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff16141515156104f657600080fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b60008060008414156105c957600091506105e8565b82840290508284828115156105da57fe5b041415156105e457fe5b8091505b5092915050565b60008082848115156105fd57fe5b04905080915050929150505600a165627a7a72305820a33be30d180838cb018e51c4a04b0a503416506e3f9686015a4e4a4e40aa53b60029",
+  "deployedBytecode": "0x6060604052600436106100ba576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630563bbf6146100bf5780632f1a8177146100e85780633beb26c41461011f57806356639a8e146101425780636fa65c4f1461016b57806374ffdcd0146101945780638da5cb5b146101bd578063a6a8613014610212578063b8d415c914610249578063d18e81b314610272578063e79fb53c1461029b578063f2fde38b146102be575b600080fd5b34156100ca57600080fd5b6100d26102f7565b6040518082815260200191505060405180910390f35b34156100f357600080fd5b61010960048080359060200190919050506102fd565b6040518082815260200191505060405180910390f35b341561012a57600080fd5b6101406004808035906020019091905050610344565b005b341561014d57600080fd5b61015561034e565b6040518082815260200191505060405180910390f35b341561017657600080fd5b61017e610354565b6040518082815260200191505060405180910390f35b341561019f57600080fd5b6101a761035b565b6040518082815260200191505060405180910390f35b34156101c857600080fd5b6101d0610367565b604051808273ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200191505060405180910390f35b341561021d57600080fd5b610233600480803590602001909190505061038c565b6040518082815260200191505060405180910390f35b341561025457600080fd5b61025c6103c4565b6040518082815260200191505060405180910390f35b341561027d57600080fd5b6102856103ca565b6040518082815260200191505060405180910390f35b34156102a657600080fd5b6102bc60048080359060200190919050506103d4565b005b34156102c957600080fd5b6102f5600480803573ffffffffffffffffffffffffffffffffffffffff1690602001909190505061045f565b005b60025481565b600061033d60015461032f84610321620f42406002546105b490919063ffffffff16565b6105b490919063ffffffff16565b6105ef90919063ffffffff16565b9050919050565b8060048190555050565b60035481565b620f424081565b670de0b6b3a764000081565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1681565b60006103bd6002546103af84670de0b6b3a76400006105b490919063ffffffff16565b6105ef90919063ffffffff16565b9050919050565b60015481565b6000600454905090565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614151561042f57600080fd5b60035461043a6103ca565b10151561044657600080fd5b60008111151561045557600080fd5b8060028190555050565b6000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff161415156104ba57600080fd5b600073ffffffffffffffffffffffffffffffffffffffff168173ffffffffffffffffffffffffffffffffffffffff16141515156104f657600080fd5b8073ffffffffffffffffffffffffffffffffffffffff166000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a3806000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff16021790555050565b60008060008414156105c957600091506105e8565b82840290508284828115156105da57fe5b041415156105e457fe5b8091505b5092915050565b60008082848115156105fd57fe5b04905080915050929150505600a165627a7a72305820a33be30d180838cb018e51c4a04b0a503416506e3f9686015a4e4a4e40aa53b60029",
+  "sourceMap": "183:310:12:-;;;274:217;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;417:21;440:14;456:16;509:10:23;501:5;;:18;;;;;;;;;;;;;;;;;;829:1:1;805:21;:25;797:34;;;;;;;;866:1;849:14;:18;841:27;;;;;;;;902:21;879:20;:44;;;;951:16;933:15;:34;;;;993:14;977:13;:30;;;;660:354;;;239:3:16;232:4;:10;;;;274:217:12;;;183:310;;;;;;",
+  "deployedSourceMap": "183:310:12:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;511:25:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1506:163;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;255:65:16;;;;;;;;;;;;;;;;;;;;;;;;;;543:27:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;411:54;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;361:43;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;238:20:23;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1325:118:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;472:32;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;326:78:16;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1068:199:1;;;;;;;;;;;;;;;;;;;;;;;;;;834:169:23;;;;;;;;;;;;;;;;;;;;;;;;;;;;511:25:1;;;;:::o;1506:163::-;1559:4;1582:80;1641:20;;1582:54;1629:6;1582:42;458:7;1582:13;;:17;;:42;;;;:::i;:::-;:46;;:54;;;;:::i;:::-;:58;;:80;;;;:::i;:::-;1575:87;;1506:163;;;:::o;255:65:16:-;308:5;301:4;:12;;;;255:65;:::o;543:27:1:-;;;;:::o;411:54::-;458:7;411:54;:::o;361:43::-;396:8;361:43;:::o;238:20:23:-;;;;;;;;;;;;;:::o;1325:118:1:-;1374:4;1397:39;1422:13;;1397:20;1413:3;396:8;1397:15;;:20;;;;:::i;:::-;:24;;:39;;;;:::i;:::-;1390:46;;1325:118;;;:::o;472:32::-;;;;:::o;326:78:16:-;370:4;393;;386:11;;326:78;:::o;1068:199:1:-;654:5:23;;;;;;;;;;;640:19;;:10;:19;;;632:28;;;;;;;;1166:15:1;;1150:13;:11;:13::i;:::-;:31;1142:40;;;;;;;;1217:1;1200:14;:18;1192:27;;;;;;;;1246:14;1230:13;:30;;;;1068:199;:::o;834:169:23:-;654:5;;;;;;;;;;;640:19;;:10;:19;;;632:28;;;;;;;;930:1;910:22;;:8;:22;;;;902:31;;;;;;;;967:8;939:37;;960:5;;;;;;;;;;;939:37;;;;;;;;;;;;990:8;982:5;;:16;;;;;;;;;;;;;;;;;;834:169;:::o;138:173:22:-;196:7;251:9;220:1;215;:6;211:35;;;238:1;231:8;;;;211:35;267:1;263;:5;251:17;;290:1;285;281;:5;;;;;;;;:10;274:18;;;;;;305:1;298:8;;138:173;;;;;;:::o;315:265::-;373:7;462:9;478:1;474;:5;;;;;;;;462:17;;574:1;567:8;;315:265;;;;;:::o",
+  "source": "pragma solidity ^0.4.18;\n\n\nimport '../BntyExchangeRateCalculator.sol';\nimport './MockKnowsTime.sol';\n\n\n// Just overwrites the currentTime() method so we can change the time for mocks\ncontract MockBntyExchangeRateCalculator is BntyExchangeRateCalculator, MockKnowsTime {\n    function MockBntyExchangeRateCalculator(uint _bntyMicrodollarPrice, uint _USDEtherPrice, uint _fixUSDPriceTime)\n    BntyExchangeRateCalculator(_bntyMicrodollarPrice, _USDEtherPrice, _fixUSDPriceTime)\n    public\n    {}\n}\n",
+  "sourcePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/mocks/MockBntyExchangeRateCalculator.sol",
+  "ast": {
+    "attributes": {
+      "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/mocks/MockBntyExchangeRateCalculator.sol",
+      "exportedSymbols": {
+        "MockBntyExchangeRateCalculator": [
+          1107
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.4",
+            ".18"
+          ]
+        },
+        "id": 1085,
+        "name": "PragmaDirective",
+        "src": "0:24:12"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 252,
+          "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/BntyExchangeRateCalculator.sol",
+          "file": "../BntyExchangeRateCalculator.sol",
+          "scope": 1108,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1086,
+        "name": "ImportDirective",
+        "src": "27:43:12"
+      },
+      {
+        "attributes": {
+          "SourceUnit": 1239,
+          "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/mocks/MockKnowsTime.sol",
+          "file": "./MockKnowsTime.sol",
+          "scope": 1108,
+          "symbolAliases": [
+            null
+          ],
+          "unitAlias": ""
+        },
+        "id": 1087,
+        "name": "ImportDirective",
+        "src": "71:29:12"
+      },
+      {
+        "attributes": {
+          "contractDependencies": [
+            251,
+            1016,
+            1238,
+            2663
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            1107,
+            1238,
+            251,
+            2663,
+            1016
+          ],
+          "name": "MockBntyExchangeRateCalculator",
+          "scope": 1108
+        },
+        "children": [
+          {
+            "attributes": {
+              "arguments": [
+                null
+              ]
+            },
+            "children": [
+              {
+                "attributes": {
+                  "contractScope": null,
+                  "name": "BntyExchangeRateCalculator",
+                  "referencedDeclaration": 251,
+                  "type": "contract BntyExchangeRateCalculator"
+                },
+                "id": 1088,
+                "name": "UserDefinedTypeName",
+                "src": "226:26:12"
+              }
+            ],
+            "id": 1089,
+            "name": "InheritanceSpecifier",
+            "src": "226:26:12"
+          },
+          {
+            "attributes": {
+              "arguments": [
+                null
+              ]
+            },
+            "children": [
+              {
+                "attributes": {
+                  "contractScope": null,
+                  "name": "MockKnowsTime",
+                  "referencedDeclaration": 1238,
+                  "type": "contract MockKnowsTime"
+                },
+                "id": 1090,
+                "name": "UserDefinedTypeName",
+                "src": "254:13:12"
+              }
+            ],
+            "id": 1091,
+            "name": "InheritanceSpecifier",
+            "src": "254:13:12"
+          },
+          {
+            "attributes": {
+              "constant": false,
+              "implemented": true,
+              "isConstructor": true,
+              "name": "MockBntyExchangeRateCalculator",
+              "payable": false,
+              "scope": 1107,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_bntyMicrodollarPrice",
+                      "scope": 1106,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1092,
+                        "name": "ElementaryTypeName",
+                        "src": "314:4:12"
+                      }
+                    ],
+                    "id": 1093,
+                    "name": "VariableDeclaration",
+                    "src": "314:26:12"
+                  },
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_USDEtherPrice",
+                      "scope": 1106,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1094,
+                        "name": "ElementaryTypeName",
+                        "src": "342:4:12"
+                      }
+                    ],
+                    "id": 1095,
+                    "name": "VariableDeclaration",
+                    "src": "342:19:12"
+                  },
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "_fixUSDPriceTime",
+                      "scope": 1106,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1096,
+                        "name": "ElementaryTypeName",
+                        "src": "363:4:12"
+                      }
+                    ],
+                    "id": 1097,
+                    "name": "VariableDeclaration",
+                    "src": "363:21:12"
+                  }
+                ],
+                "id": 1098,
+                "name": "ParameterList",
+                "src": "313:72:12"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1104,
+                "name": "ParameterList",
+                "src": "489:0:12"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "argumentTypes": null,
+                      "overloadedDeclarations": [
+                        null
+                      ],
+                      "referencedDeclaration": 251,
+                      "type": "type(contract BntyExchangeRateCalculator)",
+                      "value": "BntyExchangeRateCalculator"
+                    },
+                    "id": 1099,
+                    "name": "Identifier",
+                    "src": "390:26:12"
+                  },
+                  {
+                    "attributes": {
+                      "argumentTypes": null,
+                      "overloadedDeclarations": [
+                        null
+                      ],
+                      "referencedDeclaration": 1093,
+                      "type": "uint256",
+                      "value": "_bntyMicrodollarPrice"
+                    },
+                    "id": 1100,
+                    "name": "Identifier",
+                    "src": "417:21:12"
+                  },
+                  {
+                    "attributes": {
+                      "argumentTypes": null,
+                      "overloadedDeclarations": [
+                        null
+                      ],
+                      "referencedDeclaration": 1095,
+                      "type": "uint256",
+                      "value": "_USDEtherPrice"
+                    },
+                    "id": 1101,
+                    "name": "Identifier",
+                    "src": "440:14:12"
+                  },
+                  {
+                    "attributes": {
+                      "argumentTypes": null,
+                      "overloadedDeclarations": [
+                        null
+                      ],
+                      "referencedDeclaration": 1097,
+                      "type": "uint256",
+                      "value": "_fixUSDPriceTime"
+                    },
+                    "id": 1102,
+                    "name": "Identifier",
+                    "src": "456:16:12"
+                  }
+                ],
+                "id": 1103,
+                "name": "ModifierInvocation",
+                "src": "390:83:12"
+              },
+              {
+                "attributes": {
+                  "statements": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1105,
+                "name": "Block",
+                "src": "489:2:12"
+              }
+            ],
+            "id": 1106,
+            "name": "FunctionDefinition",
+            "src": "274:217:12"
+          }
+        ],
+        "id": 1107,
+        "name": "ContractDefinition",
+        "src": "183:310:12"
+      }
+    ],
+    "id": 1108,
+    "name": "SourceUnit",
+    "src": "0:494:12"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.18+commit.9cf6e910.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "1.0.1",
+  "updatedAt": "2017-12-15T09:52:09.195Z"
+}

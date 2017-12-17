@@ -1,0 +1,239 @@
+{
+  "contractName": "KnowsTime",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "currentTime",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    }
+  ],
+  "bytecode": "0x60606040523415600e57600080fd5b609e8061001c6000396000f300606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063d18e81b3146044575b600080fd5b3415604e57600080fd5b6054606a565b6040518082815260200191505060405180910390f35b6000429050905600a165627a7a723058203f95bc9401e9fd4571a94e19e0a181c3bec63eaba5de41e698752cd5aa5d257d0029",
+  "deployedBytecode": "0x606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063d18e81b3146044575b600080fd5b3415604e57600080fd5b6054606a565b6040518082815260200191505060405180910390f35b6000429050905600a165627a7a723058203f95bc9401e9fd4571a94e19e0a181c3bec63eaba5de41e698752cd5aa5d257d0029",
+  "sourceMap": "26:145:9:-;;;51:35;;;;;;;;26:145;;;;;;",
+  "deployedSourceMap": "26:145:9:-;;;;;;;;;;;;;;;;;;;;;;;;92:77;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;136:4;159:3;152:10;;92:77;:::o",
+  "source": "pragma solidity ^0.4.18;\n\ncontract KnowsTime {\n    function KnowsTime() public {\n    }\n\n    function currentTime() public view returns (uint) {\n        return now;\n    }\n}\n",
+  "sourcePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/KnowsTime.sol",
+  "ast": {
+    "attributes": {
+      "absolutePath": "/Users/denizdalkilic/Documents/Blockchain/Bounty0x/Bounty0xTokenSale/contracts/KnowsTime.sol",
+      "exportedSymbols": {
+        "KnowsTime": [
+          1016
+        ]
+      }
+    },
+    "children": [
+      {
+        "attributes": {
+          "literals": [
+            "solidity",
+            "^",
+            "0.4",
+            ".18"
+          ]
+        },
+        "id": 1003,
+        "name": "PragmaDirective",
+        "src": "0:24:9"
+      },
+      {
+        "attributes": {
+          "baseContracts": [
+            null
+          ],
+          "contractDependencies": [
+            null
+          ],
+          "contractKind": "contract",
+          "documentation": null,
+          "fullyImplemented": true,
+          "linearizedBaseContracts": [
+            1016
+          ],
+          "name": "KnowsTime",
+          "scope": 1017
+        },
+        "children": [
+          {
+            "attributes": {
+              "constant": false,
+              "implemented": true,
+              "isConstructor": true,
+              "modifiers": [
+                null
+              ],
+              "name": "KnowsTime",
+              "payable": false,
+              "scope": 1016,
+              "stateMutability": "nonpayable",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1004,
+                "name": "ParameterList",
+                "src": "69:2:9"
+              },
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1005,
+                "name": "ParameterList",
+                "src": "79:0:9"
+              },
+              {
+                "attributes": {
+                  "statements": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1006,
+                "name": "Block",
+                "src": "79:7:9"
+              }
+            ],
+            "id": 1007,
+            "name": "FunctionDefinition",
+            "src": "51:35:9"
+          },
+          {
+            "attributes": {
+              "constant": true,
+              "implemented": true,
+              "isConstructor": false,
+              "modifiers": [
+                null
+              ],
+              "name": "currentTime",
+              "payable": false,
+              "scope": 1016,
+              "stateMutability": "view",
+              "superFunction": null,
+              "visibility": "public"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "parameters": [
+                    null
+                  ]
+                },
+                "children": [],
+                "id": 1008,
+                "name": "ParameterList",
+                "src": "112:2:9"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "constant": false,
+                      "name": "",
+                      "scope": 1015,
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "type": "uint256",
+                      "value": null,
+                      "visibility": "internal"
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "name": "uint",
+                          "type": "uint256"
+                        },
+                        "id": 1009,
+                        "name": "ElementaryTypeName",
+                        "src": "136:4:9"
+                      }
+                    ],
+                    "id": 1010,
+                    "name": "VariableDeclaration",
+                    "src": "136:4:9"
+                  }
+                ],
+                "id": 1011,
+                "name": "ParameterList",
+                "src": "135:6:9"
+              },
+              {
+                "children": [
+                  {
+                    "attributes": {
+                      "functionReturnParameters": 1011
+                    },
+                    "children": [
+                      {
+                        "attributes": {
+                          "argumentTypes": null,
+                          "overloadedDeclarations": [
+                            null
+                          ],
+                          "referencedDeclaration": 3070,
+                          "type": "uint256",
+                          "value": "now"
+                        },
+                        "id": 1012,
+                        "name": "Identifier",
+                        "src": "159:3:9"
+                      }
+                    ],
+                    "id": 1013,
+                    "name": "Return",
+                    "src": "152:10:9"
+                  }
+                ],
+                "id": 1014,
+                "name": "Block",
+                "src": "142:27:9"
+              }
+            ],
+            "id": 1015,
+            "name": "FunctionDefinition",
+            "src": "92:77:9"
+          }
+        ],
+        "id": 1016,
+        "name": "ContractDefinition",
+        "src": "26:145:9"
+      }
+    ],
+    "id": 1017,
+    "name": "SourceUnit",
+    "src": "0:172:9"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.18+commit.9cf6e910.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "1.0.1",
+  "updatedAt": "2017-12-15T09:52:09.194Z"
+}
